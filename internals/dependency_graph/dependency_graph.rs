@@ -44,6 +44,22 @@ impl DependencyGraph {
         self.html_weight + self.javascript_weight + self.css_weight + self.uncategorized_weight
     }
 
+    pub fn log_stats(&self) {
+        Logger::info("Collecting totals");
+        println!();
+        let total = self.total_weight();
+        Logger::green("Combined");
+        Logger::log_stat(total);
+        Logger::green("JavaScript Weight");
+        Logger::log_stat(self.javascript_weight);
+        Logger::green("CSS Weight");
+        Logger::log_stat(self.css_weight);
+        Logger::green("HTML Weight");
+        Logger::log_stat(self.html_weight);
+        Logger::green("Uncategorized Weight");
+        Logger::log_stat(self.uncategorized_weight);
+    }
+
     fn html_directory(&self) -> PathBuf {
         if let Some(parent_dir) = self.root_html.parent() {
             return parent_dir.to_path_buf();
