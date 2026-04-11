@@ -1,0 +1,21 @@
+[package]
+name = "critical-path-check"
+version = "1.0.1"
+edition = "2024"
+description = "A compressor for static files producing gzip, brotli, deflate, and zstdandard file variants"
+license = "MIT"
+readme = "README.md"
+
+[[bin]]
+name = "critical-path-check"
+path = "internals/main.rs"
+
+[dependencies]
+colored = "3.1.1"
+html-ast = "0.1.0"
+htmler = "0.1.1"
+normalize-path = "0.2.1"
+swc_common = "21.0.1"
+swc_ecma_ast = "23.0.0"
+swc_ecma_parser = "38.0.1"
+url = "2.5.8"

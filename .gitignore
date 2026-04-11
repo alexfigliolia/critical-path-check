@@ -1,0 +1,4 @@
+/dist
+/target
+/test_dir
+node_modules
