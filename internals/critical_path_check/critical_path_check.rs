@@ -3,7 +3,12 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::{dependency_graph::dependency_graph::DependencyGraph, logger::logger::Logger};
+use colored::Colorize;
+
+use crate::{
+    dependency_graph::dependency_graph::DependencyGraph, logger::logger::Logger,
+    parsers::file_paths::FilePaths,
+};
 
 pub struct CriticalPathCheck {
     root_html: PathBuf,
@@ -21,23 +26,23 @@ impl CriticalPathCheck {
     }
 
     pub fn assert_javascript(&self, bytes: usize) -> bool {
-        self.build_graph().javascript_weight < bytes
+        self.run().javascript_weight < bytes
     }
 
     pub fn assert_css(&self, bytes: usize) -> bool {
-        self.build_graph().css_weight < bytes
+        self.run().css_weight < bytes
     }
 
     pub fn assert_uncategorized(&self, bytes: usize) -> bool {
-        self.build_graph().uncategorized_weight < bytes
+        self.run().uncategorized_weight < bytes
     }
 
     pub fn measure(&self) -> usize {
-        let graph = self.build_graph();
+        let graph = self.run();
         graph.total_weight()
     }
 
-    fn build_graph(&self) -> DependencyGraph {
+    pub fn run(&self) -> DependencyGraph {
         let mut graph = DependencyGraph::new(&self.root_html);
         graph.build();
         graph
@@ -56,6 +61,14 @@ impl CriticalPathCheck {
         if path.is_dir() || path.extension().unwrap_or(OsStr::new("")) != "html" {
             Logger::panic_with_error("The specified input does not point to an html file");
         }
-        path.to_path_buf()
+        let path_buf = path.to_path_buf();
+        Logger::info(
+            format!(
+                "Analyzing {}",
+                FilePaths::to_string(&path_buf).bright_blue()
+            )
+            .as_str(),
+        );
+        path_buf
     }
 }

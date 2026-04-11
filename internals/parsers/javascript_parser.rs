@@ -37,7 +37,6 @@ impl Traverser for JavaScriptParser {
         if self.builder.visited.contains(&path) {
             return;
         }
-        println!("traversing {}", &path.to_string_lossy());
         self.builder.visited.insert(path.clone());
         let source_map: Lrc<SourceMap> = Default::default();
         if let Ok(source_file) = source_map.load_file(&path) {
@@ -57,6 +56,8 @@ impl Traverser for JavaScriptParser {
                                 .to_file_system_path(source)
                             {
                                 self.builder.stack.push_back(source_path);
+                            } else {
+                                FilePaths::store_unresolved_path(&path, source);
                             }
                         } else if let Some(current_module_path) = &path.parent()
                             && let Some(source_path) =
