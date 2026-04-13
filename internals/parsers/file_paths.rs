@@ -1,68 +1,126 @@
 use std::{
     collections::{HashMap, HashSet},
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::{LazyLock, Mutex, MutexGuard},
 };
 
+use colored::Colorize;
 use normalize_path::NormalizePath;
 use url::Url;
 
+use crate::logger::logger::Logger;
+
 #[derive(Clone)]
-pub struct FilePaths {
-    root_directory: PathBuf,
+pub enum FileResolutionStrategy {
+    Http(String),
+    Local(PathBuf),
 }
 
-static UNRESOLVED_PATHS: LazyLock<Mutex<HashMap<PathBuf, HashSet<String>>>> =
+#[derive(Clone)]
+pub struct FilePaths {
+    pub root_directory: PathBuf,
+}
+
+static UNRESOLVED_PATHS: LazyLock<Mutex<HashMap<String, HashSet<String>>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
 impl FilePaths {
-    pub fn new(root_directory: PathBuf) -> Self {
-        FilePaths { root_directory }
+    pub fn new(root_directory: &PathBuf) -> Self {
+        FilePaths {
+            root_directory: root_directory.to_owned(),
+        }
     }
 
-    pub fn unresolved_paths() -> MutexGuard<'static, HashMap<PathBuf, HashSet<String>>> {
+    pub fn unresolved_paths() -> MutexGuard<'static, HashMap<String, HashSet<String>>> {
         UNRESOLVED_PATHS.lock().unwrap()
     }
 
-    pub fn store_unresolved_path(root: &PathBuf, path: &str) {
+    pub fn store_unresolved_path(root: &FileResolutionStrategy, path: &str) {
         let mut unresolved = FilePaths::unresolved_paths();
-        if let Some(bucket) = unresolved.get_mut(root) {
-            bucket.insert(path.to_owned());
-            let thing: HashSet<String> = bucket.clone();
-            unresolved.insert(root.to_owned(), thing);
-        }
+        let root_hash = FilePaths::hash(root);
+        let mut default_bucket = HashSet::new();
+        let bucket = unresolved
+            .get_mut(&root_hash)
+            .unwrap_or(&mut default_bucket);
+        bucket.insert(path.to_owned());
+        let thing: HashSet<String> = bucket.clone();
+        unresolved.insert(root_hash, thing);
     }
 
-    pub fn to_file_system_path(&self, path: &str) -> Option<PathBuf> {
+    pub fn to_string(path: &Path) -> String {
+        path.to_string_lossy().to_string()
+    }
+
+    pub fn resolve_file(
+        &self,
+        path: &str,
+        additional_roots: &Vec<PathBuf>,
+    ) -> Option<FileResolutionStrategy> {
+        let mut relative_path = String::from(path);
         if path.starts_with("http")
             && let Ok(url) = Url::parse(path)
         {
-            return self.to_existent_path_buf(url.path(), true);
+            relative_path = url.path().to_string();
         }
-        self.to_existent_path_buf(path, false)
-    }
-
-    pub fn to_existent_path_buf(&self, path: &str, find: bool) -> Option<PathBuf> {
-        if path.is_empty() {
-            return None;
-        }
-        let mut relative_path = String::from(path);
         if relative_path.starts_with("/") {
             relative_path.remove(0);
         }
-        let fs_path = self.root_directory.join(relative_path).normalize();
-        if !fs_path.exists() {
-            FilePaths::store_unresolved_path(&self.root_directory, path);
-            if find {
-                // TODO attempt to find a matching path
-                return None;
+        if !relative_path.is_empty() {
+            let absolute_from_base = self.root_directory.join(&relative_path).normalize();
+            if absolute_from_base.exists() {
+                return Some(FileResolutionStrategy::Local(absolute_from_base));
             }
-            return None;
+            for root_directory in additional_roots {
+                let absolute_from_other = root_directory.join(&relative_path).normalize();
+                if absolute_from_other.exists() {
+                    return Some(FileResolutionStrategy::Local(absolute_from_other));
+                }
+            }
         }
-        Some(fs_path)
+        if path.starts_with("http") {
+            return Some(FileResolutionStrategy::Http(path.to_owned()));
+        }
+        None
     }
 
-    pub fn to_string(path: &PathBuf) -> String {
-        path.to_string_lossy().to_string()
+    pub async fn fetch_resource(url: &str) -> Option<String> {
+        if let Ok(response) = reqwest::get(url).await
+            && let Ok(text) = response.text().await
+        {
+            return Some(text);
+        }
+        None
+    }
+
+    pub fn hash(strategy: &FileResolutionStrategy) -> String {
+        match strategy {
+            FileResolutionStrategy::Http(url) => url.to_owned(),
+            FileResolutionStrategy::Local(path) => FilePaths::to_string(path),
+        }
+    }
+
+    pub fn log_unresolved() {
+        let unresolved = FilePaths::unresolved_paths();
+        if !unresolved.is_empty() {
+            println!();
+            Logger::info("The following file references were not resolved");
+            for (root, bucket) in unresolved.iter() {
+                println!(
+                    "\n{}{}{}",
+                    Logger::indent(None),
+                    "Origin: ".cyan(),
+                    root.bright_blue()
+                );
+                for path in bucket {
+                    println!(
+                        "{}{}{}",
+                        Logger::indent(Some(6)),
+                        "Referenced: ".cyan(),
+                        path.bright_blue()
+                    )
+                }
+            }
+            println!();
+        }
     }
 }
