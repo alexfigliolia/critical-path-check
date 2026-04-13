@@ -2,13 +2,17 @@
 name = "critical-path-check"
 version = "1.0.1"
 edition = "2024"
-description = "A compressor for static files producing gzip, brotli, deflate, and zstdandard file variants"
+description = "A critical path measurement tool designed for both local and remote builds"
 license = "MIT"
 readme = "README.md"
 
 [[bin]]
 name = "critical-path-check"
 path = "internals/main.rs"
+
+[lib]
+name = "critical_path_check"
+path = "internals/lib.rs"
 
 [dependencies]
 colored = "3.1.1"

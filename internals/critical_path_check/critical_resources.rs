@@ -7,7 +7,7 @@ use std::{
 use crate::{
     logger::logger::Logger,
     parsers::{
-        file_paths::FileResolutionStrategy, html_parser::HTMLParser,
+        css_parser::CSSParser, file_paths::FileResolutionStrategy, html_parser::HTMLParser,
         javascript_parser::JavaScriptParser, traverser::Traverser,
     },
 };
@@ -48,6 +48,8 @@ impl CriticalResources {
             self.to_stack(&html_parser.javascript_paths),
         )
         .traverse();
+        self.css_weight =
+            CSSParser::new(&build_directory, self.to_stack(&html_parser.css_paths)).traverse();
     }
 
     pub fn total_weight(&self) -> usize {
@@ -57,9 +59,6 @@ impl CriticalResources {
     pub fn log_stats(&self) {
         Logger::info("Collecting totals");
         println!();
-        let total = self.total_weight();
-        Logger::green("Combined");
-        Logger::log_stat(total);
         Logger::green("JavaScript Weight");
         Logger::log_stat(self.javascript_weight);
         Logger::green("CSS Weight");
@@ -68,6 +67,9 @@ impl CriticalResources {
         Logger::log_stat(self.html_weight);
         Logger::green("Uncategorized Weight");
         Logger::log_stat(self.uncategorized_weight);
+        let total = self.total_weight();
+        Logger::green("Combined");
+        Logger::log_stat(total);
     }
 
     fn html_directory(&self) -> PathBuf {

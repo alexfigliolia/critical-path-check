@@ -3,7 +3,10 @@ use std::{
     path::PathBuf,
 };
 
-use crate::parsers::file_paths::FileResolutionStrategy;
+use crate::{
+    logger::logger::Logger,
+    parsers::file_paths::{FilePaths, FileResolutionStrategy},
+};
 
 pub struct CriticalPath {
     pub weight: usize,
@@ -28,4 +31,9 @@ pub trait Traverser {
     fn traverse(&mut self) -> usize;
 
     fn dfs(&mut self, file: FileResolutionStrategy, origin: &FileResolutionStrategy);
+
+    fn import_reference_error(&self, origin: &FileResolutionStrategy, reference: &str) {
+        FilePaths::store_unresolved_path(origin, reference);
+        Logger::path_error(reference);
+    }
 }

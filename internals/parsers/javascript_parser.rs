@@ -59,11 +59,6 @@ impl JavaScriptParser {
             }
         }
     }
-
-    pub fn import_reference_error(&self, origin: &FileResolutionStrategy, reference: &str) {
-        FilePaths::store_unresolved_path(origin, reference);
-        Logger::path_error(reference);
-    }
 }
 
 impl Traverser for JavaScriptParser {
@@ -106,7 +101,8 @@ impl Traverser for JavaScriptParser {
                                 }
                             }
                             FileResolutionStrategy::Local(ref path) => {
-                                let file_system = FilePaths::new(&path);
+                                let root = path.parent().unwrap_or(path).to_path_buf();
+                                let file_system = FilePaths::new(&root);
                                 if let Some(strategy) =
                                     file_system.resolve_file(reference, &self.resolution_roots)
                                 {
