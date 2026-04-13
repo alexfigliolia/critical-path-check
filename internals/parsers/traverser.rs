@@ -3,22 +3,29 @@ use std::{
     path::PathBuf,
 };
 
-pub struct GraphBuilder {
+use crate::parsers::file_paths::FileResolutionStrategy;
+
+pub struct CriticalPath {
     pub weight: usize,
-    pub stack: VecDeque<PathBuf>,
-    pub visited: HashSet<PathBuf>,
+    pub root_directory: PathBuf,
+    pub visited: HashSet<String>,
+    pub stack: VecDeque<(FileResolutionStrategy, FileResolutionStrategy)>,
 }
 
 pub trait Traverser {
-    fn create(paths: &HashSet<PathBuf>) -> GraphBuilder {
-        GraphBuilder {
+    fn create(
+        root_directory: &PathBuf,
+        stack: VecDeque<(FileResolutionStrategy, FileResolutionStrategy)>,
+    ) -> CriticalPath {
+        CriticalPath {
+            stack,
             weight: 0,
             visited: HashSet::new(),
-            stack: VecDeque::from_iter(paths.clone()),
+            root_directory: root_directory.to_owned(),
         }
     }
 
     fn traverse(&mut self) -> usize;
 
-    fn dfs(&mut self, path: PathBuf);
+    fn dfs(&mut self, file: FileResolutionStrategy, origin: &FileResolutionStrategy);
 }

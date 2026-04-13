@@ -1,12 +1,18 @@
-use std::{fs::read_to_string, path::PathBuf};
-
-use crate::{
-    dependency_graph::path_collector::PathCollector,
-    logger::logger::Logger,
-    parsers::{javascript_parser::JavaScriptParser, traverser::Traverser},
+use std::{
+    collections::{HashMap, VecDeque},
+    fs::read_to_string,
+    path::PathBuf,
 };
 
-pub struct DependencyGraph {
+use crate::{
+    logger::logger::Logger,
+    parsers::{
+        file_paths::FileResolutionStrategy, html_parser::HTMLParser,
+        javascript_parser::JavaScriptParser, traverser::Traverser,
+    },
+};
+
+pub struct CriticalResources {
     pub root_html: PathBuf,
     pub html_weight: usize,
     pub javascript_weight: usize,
@@ -14,9 +20,9 @@ pub struct DependencyGraph {
     pub uncategorized_weight: usize,
 }
 
-impl DependencyGraph {
+impl CriticalResources {
     pub fn new(root_html: &PathBuf) -> Self {
-        DependencyGraph {
+        CriticalResources {
             html_weight: 0,
             javascript_weight: 0,
             css_weight: 0,
@@ -34,10 +40,14 @@ impl DependencyGraph {
         }
         let html_content = result.unwrap();
         self.html_weight += html_content.len();
-        let mut collector = PathCollector::new(self.html_directory());
-        collector.build(&html_content);
-        self.javascript_weight =
-            JavaScriptParser::new(self.html_directory(), &collector.javascript_paths).traverse();
+        let build_directory = self.html_directory();
+        let mut html_parser = HTMLParser::new(&build_directory);
+        html_parser.build(&html_content);
+        self.javascript_weight = JavaScriptParser::new(
+            &build_directory,
+            self.to_stack(&html_parser.javascript_paths),
+        )
+        .traverse();
     }
 
     pub fn total_weight(&self) -> usize {
@@ -66,5 +76,17 @@ impl DependencyGraph {
         }
         Logger::panic_with_error("I was unable to determine the HTML's directory");
         panic!();
+    }
+
+    fn to_stack(
+        &self,
+        paths: &HashMap<String, FileResolutionStrategy>,
+    ) -> VecDeque<(FileResolutionStrategy, FileResolutionStrategy)> {
+        VecDeque::from_iter(paths.values().map(|entry| {
+            (
+                entry.to_owned(),
+                FileResolutionStrategy::Local(self.root_html.clone()),
+            )
+        }))
     }
 }

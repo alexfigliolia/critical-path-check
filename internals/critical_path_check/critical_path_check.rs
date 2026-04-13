@@ -6,7 +6,7 @@ use std::{
 use colored::Colorize;
 
 use crate::{
-    dependency_graph::dependency_graph::DependencyGraph, logger::logger::Logger,
+    critical_path_check::critical_resources::CriticalResources, logger::logger::Logger,
     parsers::file_paths::FilePaths,
 };
 
@@ -42,8 +42,8 @@ impl CriticalPathCheck {
         graph.total_weight()
     }
 
-    pub fn run(&self) -> DependencyGraph {
-        let mut graph = DependencyGraph::new(&self.root_html);
+    pub fn run(&self) -> CriticalResources {
+        let mut graph = CriticalResources::new(&self.root_html);
         graph.build();
         graph
     }

@@ -11,6 +11,22 @@ impl Logger {
         println!("{}{}", Logger::error_prefix(), message);
     }
 
+    pub fn path_error(path: &str) {
+        Logger::error(format!("Failed to resolve module at: {}", path.bright_blue()).as_str());
+    }
+
+    pub fn traversal_error(path: &str) {
+        Logger::error(format!("Failed to traverse file: {}", path.bright_blue()).as_str());
+    }
+
+    pub fn failed_to_parse_file(path: &str) {
+        Logger::error(format!("Failed to parse file: {}", path.bright_blue()).as_str());
+    }
+
+    pub fn failed_to_load_file(path: &str) {
+        Logger::error(format!("Failed to load remote file: {}", path.bright_blue()).as_str());
+    }
+
     pub fn green(message: &str) {
         println!("{}", message.green().bold());
     }
@@ -18,7 +34,7 @@ impl Logger {
     pub fn log_stat(value: usize) {
         println!();
         Logger::log_measure(value.to_string().as_str(), "Bytes");
-        Logger::log_measure(&((value as f64) / (1024 as f64)).to_string(), "KB");
+        Logger::log_measure(&((value as f64) / 1024_f64).to_string(), "KB");
         println!();
     }
 
@@ -29,6 +45,10 @@ impl Logger {
     pub fn panic_with_error(message: &str) {
         Logger::error(message);
         panic!();
+    }
+
+    pub fn indent(n: Option<usize>) -> String {
+        " ".repeat(n.unwrap_or(3))
     }
 
     fn info_prefix() -> ColoredString {
@@ -47,17 +67,15 @@ impl Logger {
         if tokens.len() == 1 {
             return Logger::commafy(tokens[0].to_string());
         }
-        return format!("{}.{}", Logger::commafy(tokens[0].to_string()), tokens[1]);
+        format!("{}.{}", Logger::commafy(tokens[0].to_string()), tokens[1])
     }
 
     fn commafy(s: String) -> String {
-        let result = s
-            .as_bytes()
+        s.as_bytes()
             .rchunks(3)
             .rev()
             .map(|chunk| std::str::from_utf8(chunk).unwrap())
             .collect::<Vec<_>>()
-            .join(",");
-        result
+            .join(",")
     }
 }
