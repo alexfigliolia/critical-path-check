@@ -1,56 +1,113 @@
 {
-  "name": "critical-path-check",
+  "name": "@bolte/critical-path",
   "version": "1.0.0",
-  "description": "A critical path measurement tool powered by rust",
+  "description": "Template project for writing node package with napi-rs",
   "keywords": [
-    "brotli",
-    "build",
-    "compression",
-    "deflate",
-    "frontend",
-    "gzip",
-    "production",
-    "rust",
-    "zstandard"
+    "N-API",
+    "NAPI",
+    "Rust",
+    "build-tool",
+    "critical-path",
+    "napi-rs",
+    "node-addon",
+    "node-addon-api",
+    "typescript"
   ],
-  "homepage": "https://github.com/alexfigliolia/critical-path-check#readme",
-  "bugs": {
-    "url": "https://github.com/alexfigliolia/critical-path-check/issues"
-  },
   "license": "MIT",
-  "author": "Alex Figliolia",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alexfigliolia/critical-path-check.git"
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.cts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    },
-    "./package.json": "./package.json"
+  "files": [
+    "externals/index.d.ts",
+    "externals/index.js"
+  ],
+  "main": "index.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build:rust": "cargo build --release",
-    "build:ts": "tsdown",
-    "install:rust": "yarn build:rust && cargo install --path .",
-    "lint:rust": "cargo clippy --fix --allow-dirty",
+    "artifacts": "napi artifacts",
+    "bench": "node --import @oxc-node/core/register benchmark/bench.ts",
+    "build:all": "yarn build:core --release && yarn build:wasm",
+    "build:core": "cargo build --package critical-path-check",
+    "build:wasm": "yarn build:wasm:dev --release",
+    "build:wasm:dev": "napi build --platform -o externals --package wasm",
+    "lint:rust": "cargo clippy --fix --allow-dirty && yarn format:toml",
     "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
+    "prepare": "husky",
+    "prepublishOnly": "napi prepublish -t npm",
+    "preversion": "napi build --platform && git add .",
     "release": "tsx ./release/run.ts",
-    "run:dev": "cargo run --package critical-path-check --bin critical-path-check"
+    "run:dev": "cargo run --package critical-path-check --bin critical-path-check",
+    "test": "ava",
+    "version": "napi version"
   },
   "devDependencies": {
+    "@emnapi/core": "^1.5.0",
+    "@emnapi/runtime": "^1.5.0",
     "@figliolia/child-process": "^1.0.4",
     "@figliolia/semver": "^1.0.0",
+    "@napi-rs/cli": "^3.2.0",
+    "@oxc-node/core": "^0.1.0",
+    "@taplo/cli": "^0.7.0",
+    "@tybys/wasm-util": "^0.10.0",
     "@types/node": "^25.6.0",
+    "ava": "^7.0.0",
+    "chalk": "^5.6.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.6",
+    "npm-run-all2": "^8.0.4",
     "oxfmt": "^0.45.0",
-    "oxlint": "^1.42.0",
-    "oxlint-tsgolint": "^0.20.0",
-    "tsdown": "^0.21.0",
-    "tsx": "^4.21.0",
-    "typescript": "^6.0.2"
+    "oxlint": "^1.14.0",
+    "oxlint-tsgolint": "^0.21.0",
+    "prettier": "^3.6.2",
+    "tinybench": "^6.0.0",
+    "typescript": "^6.0.0"
+  },
+  "lint-staged": {
+    "*.@(js|ts|tsx)": [
+      "yarn lint:ts"
+    ],
+    "*.toml": [
+      "taplo format"
+    ]
+  },
+  "napi": {
+    "binaryName": "critical-path",
+    "targets": [
+      "x86_64-pc-windows-msvc",
+      "x86_64-apple-darwin",
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "i686-pc-windows-msvc",
+      "armv7-unknown-linux-gnueabihf",
+      "aarch64-apple-darwin",
+      "aarch64-linux-android",
+      "x86_64-unknown-freebsd",
+      "aarch64-unknown-linux-musl",
+      "aarch64-pc-windows-msvc",
+      "armv7-linux-androideabi",
+      "wasm32-wasip1-threads"
+    ]
+  },
+  "ava": {
+    "environmentVariables": {
+      "OXC_TSCONFIG_PATH": "./__test__/tsconfig.json"
+    },
+    "extensions": {
+      "ts": "module"
+    },
+    "nodeArguments": [
+      "--import",
+      "@oxc-node/core/register"
+    ],
+    "timeout": "2m",
+    "workerThreads": false
+  },
+  "engines": {
+    "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
   }
 }

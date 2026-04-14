@@ -7,11 +7,14 @@ import { Logger, SemverRelease } from "@figliolia/semver";
 import { ChildProcess } from "@figliolia/child-process";
 
 export class Release extends SemverRelease {
-  private static readonly CARGO_FILE_PATH = join(this.ROOT, "Cargo.toml");
+  private static readonly WORKSPACES = join(this.ROOT, "internals");
+  private static readonly CARGO_FILE_PATHS = ["core", "wasm"].map(pkg =>
+    join(this.WORKSPACES, pkg, "Cargo.toml"),
+  );
   constructor() {
     super({
       onComplete: async version => {
-        await Release.writeCargoVersion(version);
+        await Release.writeCargoVersions(version);
         Logger.info("Linting Everything...");
         await new ChildProcess("yarn lint:ts").handler;
         await new ChildProcess("yarn lint:rust").handler;
@@ -21,16 +24,22 @@ export class Release extends SemverRelease {
     });
   }
 
-  private static async writeCargoVersion(version: string) {
-    let write = true;
-    const content = await this.streamFileContent(this.CARGO_FILE_PATH, line => {
-      if (write && line.startsWith('version = "')) {
-        write = false;
-        return `version = "${version}"`;
-      }
-      return line;
-    });
-    await writeFile(this.CARGO_FILE_PATH, content);
+  private static async writeCargoVersions(version: string) {
+    return Promise.all(
+      this.CARGO_FILE_PATHS.map(path =>
+        (async () => {
+          let write = true;
+          const content = await this.streamFileContent(path, line => {
+            if (write && line.startsWith('version = "')) {
+              write = false;
+              return `version = "${version}"`;
+            }
+            return line;
+          });
+          await writeFile(path, content);
+        })(),
+      ),
+    );
   }
 
   private static async streamFileContent(
