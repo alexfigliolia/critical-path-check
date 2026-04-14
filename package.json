@@ -1,7 +1,7 @@
 {
   "name": "critical-path-check",
-  "version": "1.1.0",
-  "description": "Build compression for production UI's powered by rust",
+  "version": "1.0.0",
+  "description": "A critical path measurement tool powered by rust",
   "keywords": [
     "brotli",
     "build",
@@ -34,22 +34,23 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsdown",
     "build:rust": "cargo build --release",
+    "build:ts": "tsdown",
     "install:rust": "yarn build:rust && cargo install --path .",
     "lint:rust": "cargo clippy --fix --allow-dirty",
     "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
+    "release": "tsx ./release/run.ts",
     "run:dev": "cargo run --package critical-path-check --bin critical-path-check"
   },
-  "dependencies": {
-    "@figliolia/child-process": "^1.0.4"
-  },
   "devDependencies": {
-    "@types/node": "^25.2.0",
-    "oxfmt": "^0.44.0",
+    "@figliolia/child-process": "^1.0.4",
+    "@figliolia/semver": "^1.0.0",
+    "@types/node": "^25.6.0",
+    "oxfmt": "^0.45.0",
     "oxlint": "^1.42.0",
     "oxlint-tsgolint": "^0.20.0",
     "tsdown": "^0.21.0",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.2"
   }
 }

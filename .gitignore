@@ -1,4 +1,6 @@
 /dist
 /target
 /test_dir
+test-with-errors
+test-portfolio
 node_modules

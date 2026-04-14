@@ -77,7 +77,7 @@ impl CriticalPathCheck {
         if path.is_dir() || path.extension().unwrap_or(OsStr::new("")) != "html" {
             Logger::panic_with_error("The specified input does not point to an html file");
         }
-        Logger::info(format!("Analyzing {}", FilePaths::to_string(&path).bright_blue()).as_str());
-        (&**path).to_path_buf()
+        Logger::info(format!("Analyzing {}", FilePaths::to_string(path).bright_blue()).as_str());
+        path.to_path_buf()
     }
 }
