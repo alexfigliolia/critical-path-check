@@ -5,9 +5,9 @@ use crate::{
     parsers::file_paths::FilePaths,
 };
 
-mod critical_path_check;
+pub mod critical_path_check;
 mod logger;
-mod parsers;
+pub mod parsers;
 
 /// Analyzes the target HTML file's critical render path
 ///
