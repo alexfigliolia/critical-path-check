@@ -18,8 +18,6 @@ export class Release extends SemverRelease {
         Logger.info("Linting Everything...");
         await new ChildProcess("yarn lint:ts").handler;
         await new ChildProcess("yarn lint:rust").handler;
-        Logger.info("Compiling for production...");
-        await new ChildProcess("yarn build:ts").handler;
       },
     });
   }

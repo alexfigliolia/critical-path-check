@@ -34,6 +34,7 @@
     "build:core": "cargo build --package critical-path-check",
     "build:wasm": "yarn build:wasm:dev --release",
     "build:wasm:dev": "napi build --platform -o externals --package wasm",
+    "format:toml": "taplo lint && taplo format",
     "lint:rust": "cargo clippy --fix --allow-dirty && yarn format:toml",
     "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
     "prepare": "husky",
