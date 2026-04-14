@@ -56,7 +56,7 @@ impl HTMLParser {
 
     fn create_selectors() -> (Selector, Selector) {
         if let Ok(scripts) = Selector::parse("script")
-            && let Ok(links) = Selector::parse("link")
+            && let Ok(links) = Selector::parse("link[rel=\"stylesheet\"]")
         {
             return (scripts, links);
         }

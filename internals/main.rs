@@ -1,7 +1,5 @@
 use std::env::args;
 
-use colored::Colorize;
-
 use crate::{
     critical_path_check::critical_path_check::CriticalPathCheck, logger::logger::Logger,
     parsers::file_paths::FilePaths,

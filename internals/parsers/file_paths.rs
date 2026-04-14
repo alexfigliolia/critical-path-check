@@ -1,5 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
+    fs::read_to_string,
     path::{Path, PathBuf},
     sync::{LazyLock, Mutex, MutexGuard},
 };
@@ -66,19 +67,24 @@ impl FilePaths {
             relative_path.remove(0);
         }
         if !relative_path.is_empty() {
-            let absolute_from_base = self.root_directory.join(&relative_path).normalize();
-            if absolute_from_base.exists() {
-                return Some(FileResolutionStrategy::Local(absolute_from_base));
-            }
-            for root_directory in additional_roots {
-                let absolute_from_other = root_directory.join(&relative_path).normalize();
-                if absolute_from_other.exists() {
-                    return Some(FileResolutionStrategy::Local(absolute_from_other));
+            let mut roots = Vec::from_iter(additional_roots);
+            roots.insert(0, &self.root_directory);
+            for root_directory in roots {
+                let absolute_path = root_directory.join(&relative_path).normalize();
+                if absolute_path.exists() {
+                    return Some(FileResolutionStrategy::Local(absolute_path));
                 }
             }
         }
         if path.starts_with("http") {
             return Some(FileResolutionStrategy::Http(path.to_owned()));
+        }
+        None
+    }
+
+    pub async fn read_resource(path: &PathBuf) -> Option<String> {
+        if let Ok(content) = read_to_string(path) {
+            return Some(content);
         }
         None
     }
@@ -103,7 +109,9 @@ impl FilePaths {
         let unresolved = FilePaths::unresolved_paths();
         if !unresolved.is_empty() {
             println!();
-            Logger::info("The following file references were not resolved");
+            Logger::info(
+                "The following file references were not resolved and will be omitted from analysis",
+            );
             for (root, bucket) in unresolved.iter() {
                 println!(
                     "\n{}{}{}",

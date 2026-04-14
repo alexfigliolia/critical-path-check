@@ -39,7 +39,12 @@ impl Logger {
     }
 
     pub fn log_measure(value: &str, unit: &str) {
-        println!("{} {}", Logger::to_value(value).green(), unit.green())
+        println!(
+            "{}{} {}",
+            Logger::indent(None),
+            Logger::to_value(value).cyan(),
+            unit.cyan()
+        )
     }
 
     pub fn panic_with_error(message: &str) {
