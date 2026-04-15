@@ -2,6 +2,7 @@ use std::{
     collections::{HashMap, VecDeque},
     fs::read_to_string,
     path::PathBuf,
+    process::exit,
 };
 
 use crate::{
@@ -73,7 +74,7 @@ impl CriticalResources {
             return parent_dir.to_path_buf();
         }
         Logger::panic_with_error("I was unable to determine the HTML's directory");
-        panic!();
+        exit(1);
     }
 
     fn to_stack(

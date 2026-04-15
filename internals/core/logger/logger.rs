@@ -1,3 +1,5 @@
+use std::process::exit;
+
 use colored::{ColoredString, Colorize};
 
 pub struct Logger;
@@ -49,7 +51,7 @@ impl Logger {
 
     pub fn panic_with_error(message: &str) {
         Logger::error(message);
-        panic!();
+        exit(1);
     }
 
     pub fn indent(n: Option<usize>) -> String {
