@@ -108,4 +108,4 @@ const { instance: __napiInstance, module: __wasiModule, napiModule: __napiModule
   },
 })
 module.exports = __napiModule.exports
-module.exports.analyzeCriticalPath = __napiModule.exports.analyzeCriticalPath
+module.exports.measureCriticalPath = __napiModule.exports.measureCriticalPath

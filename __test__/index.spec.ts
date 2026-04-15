@@ -19,5 +19,4 @@ test("assertions on deterministic values", async t => {
   t.is(result.analysis.htmlWeight, 542);
   t.is(result.analysis.cssWeight, 4371);
   t.is(result.analysis.javascriptWeight, 611997);
-  t.is(result.analysis.uncategorizedWeight, 0);
 });

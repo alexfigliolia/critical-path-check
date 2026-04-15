@@ -57,4 +57,4 @@ const {
   },
 })
 export default __napiModule.exports
-export const analyzeCriticalPath = __napiModule.exports.analyzeCriticalPath
+export const measureCriticalPath = __napiModule.exports.measureCriticalPath

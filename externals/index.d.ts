@@ -2,6 +2,14 @@
 /* eslint-disable */
 export declare function analyzeCriticalPath(path: string): Promise<CriticalPath>
 
+export declare function assertCriticalPath(path: string, bytes: number): Promise<boolean>
+
+export declare function assertCss(path: string, bytes: number): Promise<boolean>
+
+export declare function assertHtml(path: string, bytes: number): Promise<boolean>
+
+export declare function assertJavaScript(path: string, bytes: number): Promise<boolean>
+
 export interface CriticalPath {
   analysis: CriticalResources
   unresolvedPaths: Record<string, Set<string>>
@@ -11,5 +19,6 @@ export interface CriticalResources {
   htmlWeight: number
   javascriptWeight: number
   cssWeight: number
-  uncategorizedWeight: number
 }
+
+export declare function measureCriticalPath(path: string): Promise<number>

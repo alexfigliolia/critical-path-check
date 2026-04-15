@@ -577,3 +577,8 @@ if (!nativeBinding) {
 
 module.exports = nativeBinding
 module.exports.analyzeCriticalPath = nativeBinding.analyzeCriticalPath
+module.exports.assertCriticalPath = nativeBinding.assertCriticalPath
+module.exports.assertCss = nativeBinding.assertCss
+module.exports.assertHtml = nativeBinding.assertHtml
+module.exports.assertJavaScript = nativeBinding.assertJavaScript
+module.exports.measureCriticalPath = nativeBinding.measureCriticalPath

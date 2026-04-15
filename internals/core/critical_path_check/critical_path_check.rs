@@ -45,6 +45,10 @@ impl CriticalPathCheck {
         self.run().css_weight < bytes
     }
 
+    pub fn assert_html(&self, bytes: usize) -> bool {
+        self.run().html_weight < bytes
+    }
+
     pub fn measure(&self) -> usize {
         let graph = self.run();
         graph.total_weight()
