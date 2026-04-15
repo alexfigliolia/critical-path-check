@@ -17,7 +17,6 @@ pub struct CriticalResources {
     pub html_weight: usize,
     pub javascript_weight: usize,
     pub css_weight: usize,
-    pub uncategorized_weight: usize,
 }
 
 impl CriticalResources {
@@ -26,7 +25,6 @@ impl CriticalResources {
             html_weight: 0,
             javascript_weight: 0,
             css_weight: 0,
-            uncategorized_weight: 0,
             root_html: root_html.to_owned(),
         }
     }
@@ -41,7 +39,7 @@ impl CriticalResources {
         let html_content = result.unwrap();
         self.html_weight += html_content.len();
         let build_directory = self.html_directory();
-        let mut html_parser = HTMLParser::new(&build_directory);
+        let mut html_parser = HTMLParser::new(&self.root_html, &build_directory);
         html_parser.build(&html_content);
         self.javascript_weight = JavaScriptParser::new(
             &build_directory,
@@ -53,7 +51,7 @@ impl CriticalResources {
     }
 
     pub fn total_weight(&self) -> usize {
-        self.html_weight + self.javascript_weight + self.css_weight + self.uncategorized_weight
+        self.html_weight + self.javascript_weight + self.css_weight
     }
 
     pub fn log_stats(&self) {
@@ -65,8 +63,6 @@ impl CriticalResources {
         Logger::log_stat(self.css_weight);
         Logger::green("HTML Weight");
         Logger::log_stat(self.html_weight);
-        Logger::green("Uncategorized Weight");
-        Logger::log_stat(self.uncategorized_weight);
         let total = self.total_weight();
         Logger::green("Combined");
         Logger::log_stat(total);

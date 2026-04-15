@@ -22,7 +22,7 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": ["node_modules/**", "./target/**"],
+  "ignorePatterns": ["node_modules/**", "externals/**", "./target/**"],
   "overrides": [
     {
       "files": ["**/*.{ts}"],
@@ -38,7 +38,7 @@
         ],
         "typescript/strict-boolean-expressions": "error",
         "typescript/consistent-type-imports": "error",
-        "typescript-eslint/no-unused-vars": [
+        "no-unused-vars": [
           "error",
           {
             "args": "all",

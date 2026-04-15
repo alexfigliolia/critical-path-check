@@ -2,7 +2,8 @@
   "compilerOptions": {
     "module": "nodenext",
     "target": "esnext",
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM"],
+    "types": ["node"],
     "moduleResolution": "nodenext",
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -17,5 +18,6 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
-  }
+  },
+  "exclude": ["node_modules", "bench"]
 }

@@ -1,36 +1,30 @@
 use std::collections::{HashMap, HashSet};
 
 use critical_path_check::critical_path_check::critical_path_check::CriticalPathAnalysis;
-use wasm_bindgen::prelude::*;
+use napi_derive::napi;
 
-#[wasm_bindgen]
+#[napi(object)]
 pub struct CriticalResources {
-    pub html_weight: usize,
-    pub javascript_weight: usize,
-    pub css_weight: usize,
-    pub uncategorized_weight: usize,
+    pub html_weight: i64,
+    pub javascript_weight: i64,
+    pub css_weight: i64,
 }
 
-#[wasm_bindgen]
+#[napi(object)]
 pub struct CriticalPath {
-    analysis: CriticalResources,
-    unresolved_paths: JsValue,
+    pub analysis: CriticalResources,
+    pub unresolved_paths: HashMap<String, HashSet<String>>,
 }
 
 impl CriticalPath {
     pub fn from(analysis: CriticalPathAnalysis) -> Self {
         CriticalPath {
             analysis: CriticalResources {
-                javascript_weight: analysis.analysis.javascript_weight,
-                css_weight: analysis.analysis.css_weight,
-                html_weight: analysis.analysis.html_weight,
-                uncategorized_weight: analysis.analysis.uncategorized_weight,
+                javascript_weight: analysis.analysis.javascript_weight as i64,
+                css_weight: analysis.analysis.css_weight as i64,
+                html_weight: analysis.analysis.html_weight as i64,
             },
-            unresolved_paths: CriticalPath::to_javascript(analysis.unresolved_paths),
+            unresolved_paths: analysis.unresolved_paths,
         }
-    }
-
-    pub fn to_javascript(unresolved_paths: HashMap<String, HashSet<String>>) -> JsValue {
-        serde_wasm_bindgen::to_value(&unresolved_paths).unwrap()
     }
 }
