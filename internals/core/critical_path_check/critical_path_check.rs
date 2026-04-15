@@ -45,10 +45,6 @@ impl CriticalPathCheck {
         self.run().css_weight < bytes
     }
 
-    pub fn assert_uncategorized(&self, bytes: usize) -> bool {
-        self.run().uncategorized_weight < bytes
-    }
-
     pub fn measure(&self) -> usize {
         let graph = self.run();
         graph.total_weight()

@@ -8,18 +8,18 @@ use crate::{
 
 pub struct HTMLParser {
     pub file_paths: FilePaths,
+    pub html_path: FileResolutionStrategy,
     pub css_paths: HashMap<String, FileResolutionStrategy>,
     pub javascript_paths: HashMap<String, FileResolutionStrategy>,
-    pub uncategorized_paths: HashMap<String, FileResolutionStrategy>,
 }
 
 impl HTMLParser {
-    pub fn new(build_directory: &PathBuf) -> Self {
+    pub fn new(root_html: &PathBuf, build_directory: &PathBuf) -> Self {
         HTMLParser {
             css_paths: HashMap::new(),
             javascript_paths: HashMap::new(),
-            uncategorized_paths: HashMap::new(),
             file_paths: FilePaths::new(build_directory),
+            html_path: FileResolutionStrategy::Local(root_html.to_owned()),
         }
     }
 
@@ -49,7 +49,7 @@ impl HTMLParser {
             } else if path.ends_with(".js") {
                 self.javascript_paths.insert(hash, resolver);
             } else {
-                self.uncategorized_paths.insert(hash, resolver);
+                FilePaths::store_unresolved_path(&self.html_path, &path);
             }
         }
     }

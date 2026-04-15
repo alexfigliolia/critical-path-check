@@ -8,7 +8,6 @@ pub struct CriticalResources {
     pub html_weight: i64,
     pub javascript_weight: i64,
     pub css_weight: i64,
-    pub uncategorized_weight: i64,
 }
 
 #[napi(object)]
@@ -24,7 +23,6 @@ impl CriticalPath {
                 javascript_weight: analysis.analysis.javascript_weight as i64,
                 css_weight: analysis.analysis.css_weight as i64,
                 html_weight: analysis.analysis.html_weight as i64,
-                uncategorized_weight: analysis.analysis.uncategorized_weight as i64,
             },
             unresolved_paths: analysis.unresolved_paths,
         }
