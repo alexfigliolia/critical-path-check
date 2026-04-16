@@ -1,5 +1,5 @@
 {
-  "name": "@bolte/bolte-cplinux-arm64-gnu",
+  "name": "@bolte/critical-path-linux-arm64-gnu",
   "version": "0.1.0",
   "description": "Prebuilt binary package for `@bolte/critical-path` on `linux-arm64-gnu`.",
   "keywords": [

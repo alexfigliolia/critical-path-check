@@ -109,7 +109,7 @@
   "neon": {
     "type": "library",
     "org": "@bolte",
-    "prefix": "bolte-cp",
+    "prefix": "critical-path-",
     "platforms": "common",
     "load": "./externals/load.ts"
   }

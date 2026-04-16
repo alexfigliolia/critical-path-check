@@ -1,5 +1,5 @@
 {
-  "name": "@bolte/bolte-cpdarwin-arm64",
+  "name": "@bolte/critical-path-darwin-arm64",
   "version": "0.1.0",
   "description": "Prebuilt binary package for `@bolte/critical-path` on `darwin-arm64`.",
   "keywords": [

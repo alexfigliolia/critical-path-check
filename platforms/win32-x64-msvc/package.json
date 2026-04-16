@@ -1,5 +1,5 @@
 {
-  "name": "@bolte/bolte-cpwin32-x64-msvc",
+  "name": "@bolte/critical-path-win32-x64-msvc",
   "version": "0.1.0",
   "description": "Prebuilt binary package for `@bolte/critical-path` on `win32-x64-msvc`.",
   "keywords": [
