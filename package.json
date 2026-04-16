@@ -51,6 +51,7 @@
     "format:toml": "taplo lint && taplo format",
     "lint:all": "yarn lint:rust && yarn lint:ts",
     "lint:rust": "cargo clippy --fix --allow-dirty && yarn format:toml",
+    "lint:rust:ci": "cargo clippy --fix",
     "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
     "postcargo-build": "neon dist < cargo.log",
     "postcross-build": "neon dist -m /target < cross.log",
@@ -83,6 +84,9 @@
   "lint-staged": {
     "*.@(js|ts|tsx)": [
       "yarn lint:ts"
+    ],
+    "*.rs": [
+      "yarn lint:rust:ci"
     ],
     "*.toml": [
       "taplo format"
