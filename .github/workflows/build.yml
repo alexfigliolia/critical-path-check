@@ -90,7 +90,7 @@ jobs:
         run: |
           git config --global user.name $ACTIONS_USER
           git config --global user.email $ACTIONS_EMAIL
-          yarn version ${{ inputs.version }} -m "v%s"
+          yarn version ${{ inputs.version }} --new-version "v%s"
       - name: Build
         shell: bash
         env:
