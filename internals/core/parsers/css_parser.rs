@@ -42,7 +42,7 @@ impl CSSParser {
                 None
             }
             FileResolutionStrategy::Http(url) => {
-                if let Some(source_file) = block_on(FilePaths::fetch_resource(url)) {
+                if let Some(source_file) = FilePaths::fetch_resource_sync(url) {
                     return Some(source_file);
                 }
                 Logger::failed_to_load_file(url);

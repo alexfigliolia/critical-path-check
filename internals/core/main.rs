@@ -9,8 +9,7 @@ mod critical_path_check;
 mod logger;
 mod parsers;
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let argv: Vec<String> = args().collect();
     if argv.len() < 2 {
         Logger::panic_with_error("Please specify an absolute path to a directory");
