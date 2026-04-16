@@ -1,7 +1,4 @@
-use critical_path_check::{
-    critical_path_check::critical_path_check::{CriticalPathAnalysis, CriticalPathCheck},
-    parsers::file_paths::FilePaths,
-};
+use critical_path_check::critical_path_check::critical_path_check::CriticalPathCheck;
 use neon::{
     prelude::{Context, FunctionContext},
     result::JsResult,
@@ -18,13 +15,7 @@ pub fn analyzeCriticalPath<'a>(
     path: String,
 ) -> JsResult<'a, JsObject> {
     let analysis = CriticalPathCheck::new(&path).run();
-    let unresolved_paths = FilePaths::unresolved_paths().clone();
-    FilePaths::clear_unresolved_paths();
-    CriticalPath::from(CriticalPathAnalysis {
-        analysis,
-        unresolved_paths,
-    })
-    .to_javascript(cx)
+    CriticalPath::from(analysis).to_javascript(cx)
 }
 
 #[neon::export]
@@ -38,7 +29,7 @@ pub fn assertCriticalPath<'a>(
 }
 
 #[neon::export]
-pub fn assertHTML<'a>(
+pub fn assertCriticalHTML<'a>(
     cx: &mut FunctionContext<'a>,
     path: String,
     bytes: f64,
@@ -48,7 +39,7 @@ pub fn assertHTML<'a>(
 }
 
 #[neon::export]
-pub fn assertCSS<'a>(
+pub fn assertCriticalCSS<'a>(
     cx: &mut FunctionContext<'a>,
     path: String,
     bytes: f64,
@@ -58,7 +49,7 @@ pub fn assertCSS<'a>(
 }
 
 #[neon::export]
-pub fn assertJavaScript<'a>(
+pub fn assertCriticalJavaScript<'a>(
     cx: &mut FunctionContext<'a>,
     path: String,
     bytes: f64,

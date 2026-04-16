@@ -15,6 +15,22 @@ pub struct CriticalPathCheck {
     root_html: PathBuf,
 }
 
+/// Utilities for analyzing the critical render path of a web application
+///
+/// # Examples
+///
+/// ```
+/// use critical_path_check::critical_path_check::CriticalPathCheck;
+///
+/// let cp_check = CriticalPathCheck::new("<absolute-path-to-html-str>");
+/// # or
+/// let cp_check = CriticalPathCheck::from(&PathBuf::from("/path/to/my/root.html"));
+/// let result = cp_check.run();
+/// println!("Total JS Bytes: {}", result.analysis.javascript_weight);
+/// println!("Total CSS Bytes: {}", result.analysis.css_weight);
+/// println!("Total HTML Bytes: {}", result.analysis.html_weight);
+/// println!("Total Bytes: {}", cp_check.measure());
+/// ```
 pub struct CriticalPathAnalysis {
     pub analysis: CriticalResources,
     pub unresolved_paths: HashMap<String, HashSet<String>>,
@@ -38,26 +54,39 @@ impl CriticalPathCheck {
     }
 
     pub fn assert_javascript(&self, bytes: usize) -> bool {
-        self.run().javascript_weight < bytes
+        self.run().analysis.javascript_weight < bytes
     }
 
     pub fn assert_css(&self, bytes: usize) -> bool {
-        self.run().css_weight < bytes
+        self.run().analysis.css_weight < bytes
     }
 
     pub fn assert_html(&self, bytes: usize) -> bool {
-        self.run().html_weight < bytes
+        self.run().analysis.html_weight < bytes
     }
 
     pub fn measure(&self) -> usize {
         let graph = self.run();
-        graph.total_weight()
+        graph.analysis.total_weight()
     }
 
-    pub fn run(&self) -> CriticalResources {
-        let mut graph = CriticalResources::new(&self.root_html);
-        graph.build();
-        graph
+    pub fn run(&self) -> CriticalPathAnalysis {
+        let mut analysis = CriticalResources::new(&self.root_html);
+        analysis.build();
+        let unresolved_paths = FilePaths::unresolved_paths().clone();
+        FilePaths::clear_unresolved_paths();
+        CriticalPathAnalysis {
+            analysis,
+            unresolved_paths,
+        }
+    }
+
+    pub fn run_cli(&self) {
+        let mut analysis = CriticalResources::new(&self.root_html);
+        analysis.build();
+        FilePaths::log_unresolved();
+        analysis.log_stats();
+        FilePaths::clear_unresolved_paths();
     }
 
     fn validate_path_string(root_html: &str) -> PathBuf {

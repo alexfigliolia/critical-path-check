@@ -137,7 +137,7 @@ impl FilePaths {
                     println!(
                         "{}{}{}",
                         Logger::indent(Some(6)),
-                        "Referenced: ".cyan(),
+                        "References: ".cyan(),
                         path.bright_blue()
                     )
                 }
