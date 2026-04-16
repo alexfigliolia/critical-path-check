@@ -31,6 +31,8 @@ declare module "./load.js" {
  * test("Critical Path should never exceed N bytes", () => {
  *   const buildPath = path.join(process.cwd(), "dist", "index.html");
  *   const { htmlWeight, cssWeight, javascriptWeight } = analyzeCriticalPath(buildPath);
+ *   expect(htmlWeight).toBeLessThan(51200);
+ *   expect(cssWeight).toBeLessThan(102400);
  *   expect(javascriptWeight).toBeLessThan(204800);
  * });
  * ```
@@ -122,7 +124,7 @@ export function assertCriticalJavaScript(path: string, bytes: number): boolean {
  *
  * test("Critical CSS should never exceed N bytes", () => {
  *   const buildPath = path.join(process.cwd(), "dist", "index.html");
- *   expect(measureCriticalPath(buildPath, 204800)).toEqual(true);
+ *   expect(measureCriticalPath(buildPath)).toBeLessThan(204800);
  * });
  * ```
  */

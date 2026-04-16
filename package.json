@@ -86,7 +86,7 @@
       "yarn lint:ts"
     ],
     "*.rs": [
-      "yarn lint:rust:ci"
+      "yarn lint:rust"
     ],
     "*.toml": [
       "taplo format"
