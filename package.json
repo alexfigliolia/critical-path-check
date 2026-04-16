@@ -39,18 +39,19 @@
   },
   "scripts": {
     "bench": "yarn tsx benchmark/bench.ts",
-    "build:release": "yarn run cargo-build --release && tsdown",
     "build:dev": "yarn run cargo-build && tsdown",
+    "build:release": "yarn run cargo-build --release && tsdown",
     "cargo-build": "cargo build --workspace --message-format=json-render-diagnostics > cargo.log",
-    "cross:dev": "yarn run cross-build && tsdown",
-    "cross:release": "yarn run cross && tsdown",
     "cross": "yarn run cross-build --release",
     "cross-build": "cross build --workspace --message-format=json-render-diagnostics > cross.log",
+    "cross:dev": "yarn run cross-build && tsdown",
+    "cross:release": "yarn run cross && tsdown",
     "debug": "yarn run cargo-build",
     "dryrun": "gh workflow run publish.yml -f dryrun=true",
     "format:toml": "taplo lint && taplo format",
     "lint:all": "yarn lint:rust && yarn lint:ts",
     "lint:rust": "cargo clippy --fix --allow-dirty && yarn format:toml",
+    "lint:rust:ci": "cargo clippy --fix",
     "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
     "postcargo-build": "neon dist < cargo.log",
     "postcross-build": "neon dist -m /target < cross.log",
@@ -83,6 +84,9 @@
   "lint-staged": {
     "*.@(js|ts|tsx)": [
       "yarn lint:ts"
+    ],
+    "*.rs": [
+      "yarn lint:rust"
     ],
     "*.toml": [
       "taplo format"
