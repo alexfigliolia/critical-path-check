@@ -10,6 +10,7 @@ interface CriticalPathAnalysis {
 // Use this declaration to assign types to the addon's exports,
 // which otherwise by default are `any`.
 declare module "./load.js" {
+  function cli(path: string): void;
   function analyzeCriticalPath(path: string): CriticalPathAnalysis;
   function assertCriticalPath(path: string, bytes: number): boolean;
   function assertCriticalHTML(path: string, bytes: number): boolean;
@@ -130,4 +131,20 @@ export function assertCriticalJavaScript(path: string, bytes: number): boolean {
  */
 export function measureCriticalPath(path: string): number {
   return addon.measureCriticalPath(path);
+}
+
+/**
+ * cli
+ *
+ * Runs the critical path check as a CLI command logging all results
+ * to `stdout`
+ *
+ * ```typescript
+ * import { cli } from "@bolte/critical-path";
+ *
+ * cli("/path/to/index.html");
+ * ```
+ */
+export function cli(path: string) {
+  return addon.cli(path);
 }

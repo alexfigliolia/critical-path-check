@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import test from "ava";
 
-import { analyzeCriticalPath } from "../lib/index.mjs";
+import { analyzeCriticalPath, cli } from "../lib/index.mjs";
 
 test("test with errors encountered", t => {
   const result = analyzeCriticalPath(
@@ -23,4 +23,9 @@ test("test with no errors encountered", t => {
   t.is(result.htmlWeight, 646);
   t.is(result.cssWeight, 11782);
   t.is(result.javascriptWeight, 1336333);
+});
+
+test("test cli", t => {
+  const result = cli(join(cwd(), "fixtures/test-portfolio/index.html"));
+  t.is(result, undefined);
 });

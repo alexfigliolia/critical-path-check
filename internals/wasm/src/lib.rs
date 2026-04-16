@@ -63,3 +63,9 @@ pub fn measureCriticalPath<'a>(path: String) -> f64 {
     let analysis = CriticalPathCheck::new(&path);
     analysis.measure() as f64
 }
+
+#[neon::export]
+pub fn cli<'a>(path: String) {
+    let analysis = CriticalPathCheck::new(&path);
+    analysis.run_cli();
+}
