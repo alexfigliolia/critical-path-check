@@ -3,7 +3,15 @@ import { join } from "node:path";
 
 import test from "ava";
 
-import { analyzeCriticalPath, cli } from "../lib/index.mjs";
+import {
+  measureCriticalPath,
+  analyzeCriticalPath,
+  cli,
+  assertCriticalPath,
+  assertCriticalCSS,
+  assertCriticalHTML,
+  assertCriticalJavaScript,
+} from "../lib/index.mjs";
 
 test("test with errors encountered", t => {
   const result = analyzeCriticalPath(
@@ -28,4 +36,26 @@ test("test with no errors encountered", t => {
 test("test cli", t => {
   const result = cli(join(cwd(), "fixtures/test-portfolio/index.html"));
   t.is(result, undefined);
+});
+
+test("test measure", t => {
+  t.is(
+    measureCriticalPath(join(cwd(), "fixtures/test-portfolio/index.html")),
+    1348761,
+  );
+});
+
+test("test assertions", t => {
+  [
+    assertCriticalPath,
+    assertCriticalCSS,
+    assertCriticalHTML,
+    assertCriticalJavaScript,
+  ].forEach(method => {
+    t.is(method(join(cwd(), "fixtures/test-portfolio/index.html"), 100), false);
+    t.is(
+      method(join(cwd(), "fixtures/test-portfolio/index.html"), 10000000),
+      true,
+    );
+  });
 });
