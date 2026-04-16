@@ -82,7 +82,7 @@ jobs:
         id: neon
         uses: ./.github/actions/setup
         with:
-          use-cross: ${{ matrix.cfg.script == 'cross' }}
+          use-cross: ${{ matrix.cfg.script == 'cross:release' }}
           platform: ${{ matrix.cfg.platform }}
       - name: Update Version
         if: ${{ inputs.update-version }}
