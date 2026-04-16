@@ -5,6 +5,8 @@ run-name: |
    || format('Release: {0}', (inputs.version == 'custom' && inputs.custom) || inputs.version) }}
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       dryrun:
