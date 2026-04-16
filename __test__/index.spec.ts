@@ -7,7 +7,7 @@ import { analyzeCriticalPath } from "../lib/index.mjs";
 
 test("test with errors encountered", t => {
   const result = analyzeCriticalPath(
-    join(cwd(), "test-with-errors/index.html"),
+    join(cwd(), "fixtures/test-with-errors/index.html"),
   );
   t.is(Object.keys(result.unresolvedPaths).length, 3);
   t.is(result.htmlWeight, 542);
@@ -16,7 +16,9 @@ test("test with errors encountered", t => {
 });
 
 test("test with no errors encountered", t => {
-  const result = analyzeCriticalPath(join(cwd(), "test-portfolio/index.html"));
+  const result = analyzeCriticalPath(
+    join(cwd(), "fixtures/test-portfolio/index.html"),
+  );
   t.is(Object.keys(result.unresolvedPaths).length, 0);
   t.is(result.htmlWeight, 646);
   t.is(result.cssWeight, 11782);
