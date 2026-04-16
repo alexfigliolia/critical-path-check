@@ -5,6 +5,7 @@ A rust powered tool for making assertions on a web application's critical path
 [Installation](#installation)
 [Rust API](#rust-api)
 [JavaScript API](#javascript-api)
+[Command Line](#command-line)
 
 ## Installation
 
@@ -218,4 +219,12 @@ use critical_path_check::critical_path_check::CriticalPathCheck;
 
 let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
 cp_check.run_cli();
+```
+
+### Command Line
+
+The critical path check can be used as a CLI simply by installing the crate and running
+
+```bash
+critical-path-check /absolute/path/to/your-html.html
 ```
