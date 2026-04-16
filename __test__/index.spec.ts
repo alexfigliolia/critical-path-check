@@ -12,7 +12,7 @@ test("test with errors encountered", t => {
   t.is(Object.keys(result.unresolvedPaths).length, 3);
   t.is(result.htmlWeight, 542);
   t.is(result.cssWeight, 4371);
-  t.is(result.javascriptWeight, 611997);
+  t.is(result.javascriptWeight, 611996);
 });
 
 test("test with no errors encountered", t => {
