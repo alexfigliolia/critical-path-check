@@ -4,7 +4,17 @@ version = "1.0.0"
 edition = "2024"
 description = "A critical path measurement tool designed for both local and remote builds"
 license = "MIT"
-readme = "../README.md"
+readme = "README.md"
+authors = ["Alex Figliolia"]
+homepage = "https://github.com/alexfigliolia/critical-path-check"
+repository = "https://github.com/alexfigliolia/critical-path-check"
+keywords = [
+  "ui",
+  "critical-path",
+  "web-performance",
+  "frontend",
+  "performance-checks",
+]
 
 [[bin]]
 name = "critical-path-check"
