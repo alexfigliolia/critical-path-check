@@ -7,7 +7,6 @@ use crate::{
         traverser::{CriticalPath, Traverser},
     },
 };
-use futures::executor::block_on;
 use swc_common::{FileName, SourceMap};
 use swc_common::{SourceFile, sync::Lrc};
 use swc_ecma_ast::{ModuleDecl, ModuleItem};
@@ -46,7 +45,7 @@ impl JavaScriptParser {
                 None
             }
             FileResolutionStrategy::Http(url) => {
-                if let Some(content) = block_on(FilePaths::fetch_resource(url)) {
+                if let Some(content) = FilePaths::fetch_resource_sync(url) {
                     let source_map = SourceMap::default();
                     let file_name = url.to_owned();
                     return Some(

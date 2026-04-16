@@ -48,6 +48,11 @@ impl FilePaths {
         unresolved.insert(root_hash, thing);
     }
 
+    pub fn clear_unresolved_paths() {
+        let mut unresolved = FilePaths::unresolved_paths();
+        *unresolved = HashMap::new();
+    }
+
     pub fn to_string(path: &Path) -> String {
         path.to_string_lossy().to_string()
     }
@@ -92,6 +97,15 @@ impl FilePaths {
     pub async fn fetch_resource(url: &str) -> Option<String> {
         if let Ok(response) = reqwest::get(url).await
             && let Ok(text) = response.text().await
+        {
+            return Some(text);
+        }
+        None
+    }
+
+    pub fn fetch_resource_sync(url: &str) -> Option<String> {
+        if let Ok(response) = reqwest::blocking::get(url)
+            && let Ok(text) = response.text()
         {
             return Some(text);
         }

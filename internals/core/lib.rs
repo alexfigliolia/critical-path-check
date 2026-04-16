@@ -25,11 +25,14 @@ pub mod parsers;
 /// let my_html = PathBuf::from("/path/to/my/root.html");
 /// let result = analyze_critical_path(&my_html);
 /// ```
-pub fn analyze_critical_path(path: &PathBuf) -> CriticalPathAnalysis {
+#[tokio::main]
+pub async fn analyze_critical_path(path: &PathBuf) -> CriticalPathAnalysis {
     let analysis = CriticalPathCheck::from(path).run();
     let unresolved_paths = FilePaths::unresolved_paths().clone();
-    CriticalPathAnalysis {
+    let result = CriticalPathAnalysis {
         analysis,
         unresolved_paths,
-    }
+    };
+    FilePaths::clear_unresolved_paths();
+    result
 }

@@ -1,0 +1,41 @@
+{
+  "name": "@bolte/bolte-cpwin32-x64-msvc",
+  "version": "0.1.0",
+  "description": "Prebuilt binary package for `@bolte/critical-path` on `win32-x64-msvc`.",
+  "keywords": [
+    "ci",
+    "cli",
+    "critical-path",
+    "frontend",
+    "performance",
+    "rust"
+  ],
+  "homepage": "https://github.com/alexfigliolia/critical-path-check#readme",
+  "bugs": {
+    "url": "https://github.com/alexfigliolia/critical-path-check/issues"
+  },
+  "license": "MIT",
+  "author": "Alex Figliolia",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/alexfigliolia/critical-path-check.git"
+  },
+  "files": [
+    "index.node"
+  ],
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "index.node",
+  "neon": {
+    "type": "binary",
+    "rust": "x86_64-pc-windows-msvc",
+    "node": "win32-x64-msvc",
+    "os": "win32",
+    "arch": "x64",
+    "abi": "msvc"
+  }
+}
