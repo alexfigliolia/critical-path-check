@@ -55,7 +55,7 @@
     "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
     "postcargo-build": "neon dist < cargo.log",
     "postcross-build": "neon dist -m /target < cross.log",
-    "prepack": "neon update && tsdown",
+    "prepack": "neon update && yarn build:release",
     "release": "gh workflow run release.yml -f dryrun=false -f version=patch",
     "run:dev": "cargo run --package critical-path-check --bin critical-path-check",
     "test": "yarn build:dev && ava",
