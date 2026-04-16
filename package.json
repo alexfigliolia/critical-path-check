@@ -39,11 +39,14 @@
   },
   "scripts": {
     "bench": "yarn tsx benchmark/bench.ts",
-    "build": "yarn run cargo-build --release",
-    "cargo-build": "cargo build --workspace --message-format=json-render-diagnostics > cargo.log && tsdown",
+    "build:release": "yarn run cargo-build --release && tsdown",
+    "build:dev": "yarn run cargo-build && tsdown",
+    "cargo-build": "cargo build --workspace --message-format=json-render-diagnostics > cargo.log",
+    "cross:dev": "yarn run cross-build && tsdown",
+    "cross:release": "yarn run cross && tsdown",
     "cross": "yarn run cross-build --release",
-    "cross-build": "cross build --workspace --message-format=json-render-diagnostics > cross.log && tsdown",
-    "debug": "yarn run cargo-build --",
+    "cross-build": "cross build --workspace --message-format=json-render-diagnostics > cross.log",
+    "debug": "yarn run cargo-build",
     "dryrun": "gh workflow run publish.yml -f dryrun=true",
     "format:toml": "taplo lint && taplo format",
     "lint:all": "yarn lint:rust && yarn lint:ts",
@@ -54,7 +57,7 @@
     "prepack": "neon update && tsdown",
     "release": "gh workflow run release.yml -f dryrun=false -f version=patch",
     "run:dev": "cargo run --package critical-path-check --bin critical-path-check",
-    "test": "yarn build && ava",
+    "test": "yarn build:dev && ava",
     "version": "neon bump --binaries platforms && git add ."
   },
   "dependencies": {
