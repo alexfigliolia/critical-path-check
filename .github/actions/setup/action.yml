@@ -44,7 +44,7 @@ runs:
         cache: npm
     - name: Install Dependencies
       shell: bash
-      run: npm ci
+      run: yarn install
     - name: Compute Rust Target
       if: ${{ inputs['use-rust'] == 'true' }}
       id: target

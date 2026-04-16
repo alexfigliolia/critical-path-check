@@ -90,19 +90,19 @@ jobs:
         run: |
           git config --global user.name $ACTIONS_USER
           git config --global user.email $ACTIONS_EMAIL
-          npm version ${{ inputs.version }} -m "v%s"
+          yarn version ${{ inputs.version }} -m "v%s"
       - name: Build
         shell: bash
         env:
           CARGO_BUILD_TARGET: ${{ steps.neon.outputs.target }}
           NEON_BUILD_PLATFORM: ${{ matrix.cfg.platform }}
-        run: npm run ${{ matrix.cfg.script }}
+        run: yarn run ${{ matrix.cfg.script }}
       - name: Pack
         id: pack
         shell: bash
         run: |
           mkdir -p dist
-          echo filename=$(basename $(npm pack ./platforms/${{ matrix.cfg.platform }} --silent --pack-destination=./dist --json | jq -r '.[0].filename')) | tee -a $GITHUB_OUTPUT
+          echo filename=$(basename $(yarn pack ./platforms/${{ matrix.cfg.platform }} --silent --pack-destination=./dist --json | jq -r '.[0].filename')) | tee -a $GITHUB_OUTPUT
       - name: Release
         if: ${{ inputs.github-release }}
         uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564 # v2.0.4
@@ -128,7 +128,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          echo "filename=$(npm pack --silent --pack-destination=./dist)" | tee -a $GITHUB_OUTPUT
+          echo "filename=$(yarn pack --silent --pack-destination=./dist)" | tee -a $GITHUB_OUTPUT
       - name: Release
         if: ${{ inputs.github-release }}
         uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564 # v2.0.4
