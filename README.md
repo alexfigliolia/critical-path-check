@@ -12,9 +12,9 @@ A rust powered tool for making assertions on a web application's critical path
 #### JavaScript/TypeScript
 
 ```bash
-npm i -D @bolte/critical-path
-yarn add -D @bolte/critical-path
-pnpm add -D @bolte/critical-path
+npm i -D critical-path-check
+yarn add -D critical-path-check
+pnpm add -D critical-path-check
 ```
 
 #### Rust
@@ -32,7 +32,7 @@ entrypoint modules including, HTML, CSS, and JavaScript. This method
 will also return an unresolvable paths encountered during the analysis
 
 ```typescript
-import { analyzeCriticalPath } from "@bolte/critical-path";
+import { analyzeCriticalPath } from "critical-path-check";
 
 test("Critical Path should never exceed N bytes", () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
@@ -49,7 +49,7 @@ test("Critical Path should never exceed N bytes", () => {
 Returns the combined weight of critical HTML, CSS, and JavaScript in bytes
 
 ```typescript
-import { measureCriticalPath } from "@bolte/critical-path";
+import { measureCriticalPath } from "critical-path-check";
 
 test("Critical CSS should never exceed N bytes", () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
@@ -63,7 +63,7 @@ Returns true if the combined weight of critical HTML, CSS, and JS
 does not exceed the input threshold bytes.
 
 ```typescript
-import { assertCriticalPath } from "@bolte/critical-path";
+import { assertCriticalPath } from "critical-path-check";
 
 test("Critical Path should never exceed N bytes", () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
@@ -76,7 +76,7 @@ test("Critical Path should never exceed N bytes", () => {
 Returns true if the weight of critical HTML does not exceed the input threshold bytes.
 
 ```typescript
-import { assertCriticalHTML } from "@bolte/critical-path";
+import { assertCriticalHTML } from "critical-path-check";
 
 test("Critical HTML should never exceed N bytes", () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
@@ -89,7 +89,7 @@ test("Critical HTML should never exceed N bytes", () => {
 Returns true if the weight of critical CSS does not exceed the input threshold bytes.
 
 ```typescript
-import { assertCriticalCSS } from "@bolte/critical-path";
+import { assertCriticalCSS } from "critical-path-check";
 
 test("Critical CSS should never exceed N bytes", () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
@@ -102,7 +102,7 @@ test("Critical CSS should never exceed N bytes", () => {
 Returns true if the combined weight of critical JS does not exceed the input threshold bytes.
 
 ```typescript
-import { assertCriticalJavaScript } from "@bolte/critical-path";
+import { assertCriticalJavaScript } from "critical-path-check";
 
 test("Critical CSS should never exceed N bytes", () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");

@@ -87,23 +87,14 @@ impl FilePaths {
         None
     }
 
-    pub async fn read_resource(path: &PathBuf) -> Option<String> {
+    pub fn read_resource(path: &PathBuf) -> Option<String> {
         if let Ok(content) = read_to_string(path) {
             return Some(content);
         }
         None
     }
 
-    pub async fn fetch_resource(url: &str) -> Option<String> {
-        if let Ok(response) = reqwest::get(url).await
-            && let Ok(text) = response.text().await
-        {
-            return Some(text);
-        }
-        None
-    }
-
-    pub fn fetch_resource_sync(url: &str) -> Option<String> {
+    pub fn fetch_resource(url: &str) -> Option<String> {
         if let Ok(response) = reqwest::blocking::get(url)
             && let Ok(text) = response.text()
         {
@@ -122,19 +113,19 @@ impl FilePaths {
     pub fn log_unresolved() {
         let unresolved = FilePaths::unresolved_paths();
         if !unresolved.is_empty() {
-            println!();
+            eprintln!();
             Logger::info(
                 "The following file references were not resolved and will be omitted from analysis",
             );
             for (root, bucket) in unresolved.iter() {
-                println!(
+                eprintln!(
                     "\n{}{}{}",
                     Logger::indent(None),
                     "Origin: ".cyan(),
                     root.bright_blue()
                 );
                 for path in bucket {
-                    println!(
+                    eprintln!(
                         "{}{}{}",
                         Logger::indent(Some(6)),
                         "References: ".cyan(),
@@ -142,7 +133,7 @@ impl FilePaths {
                     )
                 }
             }
-            println!();
+            eprintln!();
         }
     }
 }

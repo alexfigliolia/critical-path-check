@@ -1,29 +1,25 @@
-use std::{collections::VecDeque, path::PathBuf};
+use std::collections::VecDeque;
+use std::path::PathBuf;
 
-use crate::{
-    logger::logger::Logger,
-    parsers::{
-        file_paths::{FilePaths, FileResolutionStrategy},
-        traverser::{CriticalPath, Traverser},
-    },
-};
-use swc_common::{FileName, SourceMap};
-use swc_common::{SourceFile, sync::Lrc};
-use swc_ecma_ast::{ModuleDecl, ModuleItem};
-use swc_ecma_parser::{Parser, StringInput, Syntax};
+use lightningcss::rules::CssRule;
+use lightningcss::stylesheet::{ParserOptions, StyleSheet};
 
-pub struct JavaScriptParser {
+use crate::logger::logger::Logger;
+use crate::parsers::file_paths::{FilePaths, FileResolutionStrategy};
+use crate::parsers::traverser::{CriticalPath, Traverser};
+
+pub struct CSSParser {
     builder: CriticalPath,
     resolution_roots: Vec<PathBuf>,
 }
 
-impl JavaScriptParser {
+impl CSSParser {
     pub fn new(
         root_directory: &PathBuf,
         paths: VecDeque<(FileResolutionStrategy, FileResolutionStrategy)>,
     ) -> Self {
-        let builder = JavaScriptParser::create(root_directory, paths);
-        JavaScriptParser {
+        let builder = CSSParser::create(root_directory, paths);
+        CSSParser {
             resolution_roots: [builder.root_directory.to_owned()].to_vec(),
             builder,
         }
@@ -33,34 +29,30 @@ impl JavaScriptParser {
         &self,
         file: &FileResolutionStrategy,
         origin: &FileResolutionStrategy,
-    ) -> Option<Lrc<SourceFile>> {
+    ) -> Option<String> {
         match file {
             FileResolutionStrategy::Local(path) => {
-                let source_map: Lrc<SourceMap> = Default::default();
-                if let Ok(source_file) = source_map.load_file(path) {
+                let path_string = &FilePaths::to_string(path);
+                if let Some(source_file) = FilePaths::read_resource(path) {
                     return Some(source_file);
                 }
-                FilePaths::store_unresolved_path(origin, &FilePaths::hash(file));
-                Logger::failed_to_parse_file(&FilePaths::to_string(path));
+                Logger::path_error(path_string);
+                FilePaths::store_unresolved_path(origin, path_string);
                 None
             }
             FileResolutionStrategy::Http(url) => {
-                if let Some(content) = FilePaths::fetch_resource_sync(url) {
-                    let source_map = SourceMap::default();
-                    let file_name = url.to_owned();
-                    return Some(
-                        source_map.new_source_file(FileName::Custom(file_name).into(), content),
-                    );
+                if let Some(source_file) = FilePaths::fetch_resource(url) {
+                    return Some(source_file);
                 }
-                FilePaths::store_unresolved_path(origin, url);
                 Logger::failed_to_load_file(url);
+                FilePaths::store_unresolved_path(origin, url);
                 None
             }
         }
     }
 }
 
-impl Traverser for JavaScriptParser {
+impl Traverser for CSSParser {
     fn traverse(&mut self) -> usize {
         while !self.builder.stack.is_empty() {
             if let Some((file, origin)) = self.builder.stack.pop_back() {
@@ -77,37 +69,29 @@ impl Traverser for JavaScriptParser {
         }
         self.builder.visited.insert(key);
         if let Some(source_file) = self.to_source_file(&file, origin) {
-            self.builder.weight += source_file.byte_length() as usize;
-            let mut parser = Parser::new(
-                Syntax::Es(Default::default()),
-                StringInput::from(&*source_file),
-                None,
-            );
-            if let Ok(module) = parser.parse_module() {
-                for item in module.body {
-                    if let ModuleItem::ModuleDecl(ModuleDecl::Import(import_decl)) = item
-                        && let Some(reference) = import_decl.src.value.as_str()
-                    {
+            if let Ok(stylesheet) = StyleSheet::parse(&source_file, ParserOptions::default()) {
+                self.builder.weight += source_file.len();
+                for rule in stylesheet.rules.0 {
+                    if let CssRule::Import(reference) = rule {
                         match file {
                             FileResolutionStrategy::Http(_) => {
                                 let file_system = FilePaths::new(&self.builder.root_directory);
                                 if let Some(strategy) =
-                                    file_system.resolve_file(reference, &Vec::new())
+                                    file_system.resolve_file(&reference.url, &Vec::new())
                                 {
                                     self.builder.stack.push_back((strategy, file.clone()));
                                 } else {
-                                    self.import_reference_error(&file, reference);
+                                    self.import_reference_error(&file, &reference.url);
                                 }
                             }
                             FileResolutionStrategy::Local(ref path) => {
-                                let root = path.parent().unwrap_or(path).to_path_buf();
-                                let file_system = FilePaths::new(&root);
+                                let file_system = FilePaths::new(path);
                                 if let Some(strategy) =
-                                    file_system.resolve_file(reference, &self.resolution_roots)
+                                    file_system.resolve_file(&reference.url, &self.resolution_roots)
                                 {
                                     self.builder.stack.push_back((strategy, file.clone()));
                                 } else {
-                                    self.import_reference_error(&file, reference);
+                                    self.import_reference_error(&file, &reference.url);
                                 }
                             }
                         }

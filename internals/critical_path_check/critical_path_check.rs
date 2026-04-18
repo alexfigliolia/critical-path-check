@@ -7,7 +7,8 @@ use std::{
 use colored::Colorize;
 
 use crate::{
-    critical_path_check::critical_resources::CriticalResources, logger::logger::Logger,
+    critical_path_check::{critical_resources::CriticalResources, json_result::JSONResult},
+    logger::logger::Logger,
     parsers::file_paths::FilePaths,
 };
 
@@ -161,7 +162,7 @@ impl CriticalPathCheck {
     ///
     /// ```rust
     /// let cp_check = CriticalPathCheck::new("/path/to/index.html");
-    /// let result = cp_check.run_cli();
+    /// cp_check.run_cli();
     /// ```
     pub fn run_cli(&self) {
         let mut analysis = CriticalResources::new(&self.root_html);
@@ -169,6 +170,22 @@ impl CriticalPathCheck {
         FilePaths::log_unresolved();
         analysis.log_stats();
         FilePaths::clear_unresolved_paths();
+    }
+
+    /// ## as_json
+    ///
+    /// Executes the critical path analysis as a CLI command logging the
+    /// analysis results as a JSON object to stdout
+    ///
+    /// ```rust
+    /// let cp_check = CriticalPathCheck::new("/path/to/index.html");
+    /// cp_check.as_json();
+    /// ```
+    pub fn as_json(&self) {
+        let mut analysis = CriticalResources::new(&self.root_html);
+        analysis.build();
+        let json_result = JSONResult::from(analysis);
+        println!("{}", json_result.to_string());
     }
 
     fn validate_path_string(root_html: &str) -> PathBuf {

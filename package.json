@@ -1,6 +1,6 @@
 {
-  "name": "@bolte/critical-path",
-  "version": "1.0.0",
+  "name": "critical-path-check",
+  "version": "1.0.1",
   "description": "A critical path analysis tool powered by rust",
   "keywords": [
     "ci",
@@ -21,7 +21,12 @@
     "url": "git+ssh://git@github.com/alexfigliolia/critical-path-check.git"
   },
   "files": [
-    "lib/**/*.?({c,m}){t,j}s"
+    "dist",
+    "externals",
+    "internals",
+    "Cargo.lock",
+    "Cargo.toml",
+    "install.sh"
   ],
   "main": "./lib/index.cjs",
   "types": "./lib/index.d.cts",
@@ -39,33 +44,27 @@
   },
   "scripts": {
     "bench": "yarn tsx benchmark/bench.ts",
-    "build:dev": "yarn run cargo-build && tsdown",
-    "build:release": "yarn run cargo-build --release && tsdown",
-    "cargo-build": "cargo build --workspace --message-format=json-render-diagnostics > cargo.log",
-    "cross": "yarn run cross-build --release",
-    "cross-build": "cross build --workspace --message-format=json-render-diagnostics > cross.log",
-    "cross:dev": "yarn run cross-build && tsdown",
-    "cross:release": "yarn build:release && yarn run cross",
-    "debug": "yarn run cargo-build",
-    "dryrun": "gh workflow run publish.yml -f dryrun=true",
+    "build:cli": "yarn build:rust && yarn install:rust",
+    "build:rust": "cargo build --release",
+    "build:rust:dev": "cargo build",
+    "build:ts": "tsdown",
     "format:toml": "taplo lint && taplo format",
+    "install:rust": "cargo install --path .",
     "lint:all": "yarn lint:rust && yarn lint:ts",
     "lint:rust": "cargo clippy --fix --allow-dirty && yarn format:toml",
     "lint:rust:ci": "cargo clippy --fix",
     "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
-    "postcargo-build": "neon dist < cargo.log",
-    "postcross-build": "neon dist -m ./target < cross.log",
-    "prepack": "neon update && yarn build:release",
-    "release": "gh workflow run release.yml -f dryrun=false -f version=patch",
-    "run:dev": "cargo run --package critical-path-check --bin critical-path-check",
-    "test": "yarn build:dev && ava",
-    "version": "neon bump --binaries platforms && git add ."
+    "postinstall": "chmod +x install.sh && ./install.sh",
+    "release": "tsx ./release/run.ts",
+    "run:dev": "cargo run --bin critical-path-check",
+    "test": "yarn build:cli && ava"
   },
   "dependencies": {
-    "@neon-rs/load": "^0.1.82"
+    "@figliolia/child-process": "^1.0.4",
+    "@figliolia/semver": "^1.0.0",
+    "ui-build-compression": "^1.1.4"
   },
   "devDependencies": {
-    "@neon-rs/cli": "^0.1.82",
     "@oxc-node/core": "^0.1.0",
     "@taplo/cli": "^0.7.0",
     "@tsconfig/node20": "^20.1.4",
@@ -105,12 +104,5 @@
     ],
     "timeout": "2m",
     "workerThreads": false
-  },
-  "neon": {
-    "type": "library",
-    "org": "@bolte",
-    "prefix": "critical-path-",
-    "platforms": "common",
-    "load": "./externals/load.ts"
   }
 }
