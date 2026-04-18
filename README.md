@@ -2,10 +2,10 @@
 
 A rust powered tool for making assertions on a web application's critical path
 
-[Installation](#installation)
-[Rust API](#rust-api)
-[JavaScript API](#javascript-api)
-[Command Line](#command-line)
+1. [Installation](#installation)
+2. [Rust API](#rust-api)
+3. [JavaScript API](#javascript-api)
+4. [Command Line](#command-line)
 
 ## Installation
 
@@ -227,4 +227,10 @@ The critical path check can be used as a CLI simply by installing the crate and 
 
 ```bash
 critical-path-check /absolute/path/to/your-html.html
+```
+
+To print the results as a JSON string to `stdout`
+
+```bash
+critical-path-check /absolute/path/to/your-html.html -j
 ```
