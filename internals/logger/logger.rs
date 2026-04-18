@@ -6,11 +6,11 @@ pub struct Logger;
 
 impl Logger {
     pub fn info(message: &str) {
-        println!("{}{}", Logger::info_prefix(), message);
+        eprintln!("{}{}", Logger::info_prefix(), message);
     }
 
     pub fn error(message: &str) {
-        println!("{}{}", Logger::error_prefix(), message);
+        eprintln!("{}{}", Logger::error_prefix(), message);
     }
 
     pub fn path_error(path: &str) {
@@ -27,6 +27,16 @@ impl Logger {
 
     pub fn failed_to_load_file(path: &str) {
         Logger::error(format!("Failed to load remote file: {}", path.bright_blue()).as_str());
+    }
+
+    pub fn file_issue() {
+        eprintln!();
+        eprintln!(
+            "{}{}",
+            Logger::indent(None),
+            "https://github.com/alexfigliolia/critical-path-check/issues".bright_blue()
+        );
+        eprintln!();
     }
 
     pub fn green(message: &str) {

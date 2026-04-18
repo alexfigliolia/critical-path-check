@@ -39,56 +39,6 @@
     "@babel/helper-string-parser" "^8.0.0-rc.3"
     "@babel/helper-validator-identifier" "^8.0.0-rc.3"
 
-"@cargo-messages/android-arm-eabi@0.1.81":
-  version "0.1.81"
-  resolved "https://registry.yarnpkg.com/@cargo-messages/android-arm-eabi/-/android-arm-eabi-0.1.81.tgz#e811511732e50153477e91448524f7a2548e2981"
-  integrity sha512-cpRbgb56e9LmAj96Tixtz9/bTlaJAeplWNNv4obu+eqQyZd3ZjX04TJd9fM1bjHDGVyR9GTVlgBsbQEntIGkwg==
-
-"@cargo-messages/darwin-arm64@0.1.81":
-  version "0.1.81"
-  resolved "https://registry.yarnpkg.com/@cargo-messages/darwin-arm64/-/darwin-arm64-0.1.81.tgz#65544f3fa4facf6a6bf2282ba10ce1792ec22243"
-  integrity sha512-OwGqsw+tbJx37a/vH4T8R9qkrrFYoTIOnckbA9+MhQodE2FSWyk3HvLh+z8jjl+QZa1RSOU9Ax6gt/46h0BiTg==
-
-"@cargo-messages/darwin-x64@0.1.81":
-  version "0.1.81"
-  resolved "https://registry.yarnpkg.com/@cargo-messages/darwin-x64/-/darwin-x64-0.1.81.tgz#886f5585cbd135091f26d4f899d5f4eac8676594"
-  integrity sha512-Iu761bPk25Ce6yUdDCjjeVuT8/xbBmczyaNB7oYBmAZEE5rshvCJ42TqSShYYP+S7pKkN42nBhkFooaZrqaz9g==
-
-"@cargo-messages/linux-arm-gnueabihf@0.1.81":
-  version "0.1.81"
-  resolved "https://registry.yarnpkg.com/@cargo-messages/linux-arm-gnueabihf/-/linux-arm-gnueabihf-0.1.81.tgz#71a349c80d4051d94aa66563ca51afa99e140ded"
-  integrity sha512-iIuy7KTJAEhbiqlIlcxQOdW6opI6M9LXlgd/jdsHbP2FjmTyhTLnd3JCJ6JeAeidwknCDs+CFlaVmPxTKSytsg==
-
-"@cargo-messages/linux-arm64-gnu@0.1.81":
-  version "0.1.81"
-  resolved "https://registry.yarnpkg.com/@cargo-messages/linux-arm64-gnu/-/linux-arm64-gnu-0.1.81.tgz#d1def13cb97b02d5a54e176bfc4fdfa4e755c43f"
-  integrity sha512-QPQRsHj9m/9ga8wRBlLh8t2AXyr40+/H55FIKVj7zIjV++waY/TbSTPofDZQhMycd5VSGLKztfhahiCO7c/RAQ==
-
-"@cargo-messages/linux-arm64-musl@0.1.81":
-  version "0.1.81"
-  resolved "https://registry.yarnpkg.com/@cargo-messages/linux-arm64-musl/-/linux-arm64-musl-0.1.81.tgz#61ce1ddc98d149e3c45d3573ff1e1bb13522c3a4"
-  integrity sha512-9O0ATesIOjDTz2L01OtlGHYwP86I31/mzXMC+ryQkzbbIKj7KUiSqmEc29I14I517UYO8/sMeow6q6MVBpehlA==
-
-"@cargo-messages/linux-x64-gnu@0.1.81":
-  version "0.1.81"
-  resolved "https://registry.yarnpkg.com/@cargo-messages/linux-x64-gnu/-/linux-x64-gnu-0.1.81.tgz#18b40cb562a167e97e14b2a7816f5d084022ac14"
-  integrity sha512-wEFYxCdtHNiEvp5KEg17CfRCUdfRTtkL+1GASROyvYEUV6DQf6TXxfHuuWg2xlVxh5fqiTGFSRfiqFrCDL/xrw==
-
-"@cargo-messages/linux-x64-musl@0.1.81":
-  version "0.1.81"
-  resolved "https://registry.yarnpkg.com/@cargo-messages/linux-x64-musl/-/linux-x64-musl-0.1.81.tgz#6a55a25da8a4d8ebbbfeb6ea85c398d07804fbf2"
-  integrity sha512-zi5pKIh60oPwOCDQapAZ3Mya4y56MI2BoGvY8JtztYaXTorGmAoyf6jjb50Wt+HfoYYjM3OlPt03XMlCFZJnIQ==
-
-"@cargo-messages/win32-arm64-msvc@0.1.81":
-  version "0.1.81"
-  resolved "https://registry.yarnpkg.com/@cargo-messages/win32-arm64-msvc/-/win32-arm64-msvc-0.1.81.tgz#43d01af6b9752b5a50f7cc58d92b26143190dcf4"
-  integrity sha512-oyiT8AYLoguF7cFOMYDsPv3eirzBcFafOOfRsFyd3+wmaPTl/DdbCq446oThRmSAsEGJpzhzj7TafcnXMBkHbg==
-
-"@cargo-messages/win32-x64-msvc@0.1.81":
-  version "0.1.81"
-  resolved "https://registry.yarnpkg.com/@cargo-messages/win32-x64-msvc/-/win32-x64-msvc-0.1.81.tgz#5797b597c876337543901da735d8a7dc82f97d76"
-  integrity sha512-B5Ukf4AohtIv27uCP/AgM+7vYwQ4RacI6m8ZBr2XKeSrjZXcXguzlZd+wD7bD5+wa0capvXKUskZDnpG/DcYiA==
-
 "@emnapi/core@1.9.1":
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/@emnapi/core/-/core-1.9.1.tgz#2143069c744ca2442074f8078462e51edd63c7bd"
@@ -263,6 +213,16 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.27.7.tgz#8fe30b3088b89b4873c3a6cc87597ae3920c0a8b"
   integrity sha512-56hiAJPhwQ1R4i+21FVF7V8kSD5zZTdHcVuRFMW0hn753vVfQN8xlx4uOPT4xoGH0Z/oVATuR82AiqSTDIpaHg==
 
+"@figliolia/child-process@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@figliolia/child-process/-/child-process-1.0.4.tgz#5337c847f43a08ff9e1124793fa650f746515da5"
+  integrity sha512-midiGoIu0pO9q+T607iYFSsEFSg6XlWJ7REaGcX/mCuxgrr8hudGSPz4OzyXznVUlp1UwaVTjfgYHlSUxuaJXg==
+
+"@figliolia/semver@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@figliolia/semver/-/semver-1.0.0.tgz#bc2be6f79b7de8fc1c18e1c3c3bc312f785e51b8"
+  integrity sha512-8+HBxSsbdvfFJKvSwKRGdeq6dV5BjoMGu7AQEooXFnUXGedgvnIxAgolnykGMUcF5hBC6hQB0a9FZuq79HYOgw==
+
 "@isaacs/fs-minipass@^4.0.0":
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@isaacs/fs-minipass/-/fs-minipass-4.0.1.tgz#2d59ae3ab4b38fb4270bfa23d30f8e2e86c7fe32"
@@ -315,27 +275,6 @@
   integrity sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow==
   dependencies:
     "@tybys/wasm-util" "^0.10.1"
-
-"@neon-rs/cli@^0.1.82":
-  version "0.1.82"
-  resolved "https://registry.yarnpkg.com/@neon-rs/cli/-/cli-0.1.82.tgz#f575eccf238b5b40e117f0e726266bf573b49502"
-  integrity sha512-QrlGPQp9KOGuMvjjua79lEV2QTcE16m8JatG5ITdQpBAwRQpDw5xab57W9130y2iUEfMzYtp7v6pcN1fUB0Exg==
-  optionalDependencies:
-    "@cargo-messages/android-arm-eabi" "0.1.81"
-    "@cargo-messages/darwin-arm64" "0.1.81"
-    "@cargo-messages/darwin-x64" "0.1.81"
-    "@cargo-messages/linux-arm-gnueabihf" "0.1.81"
-    "@cargo-messages/linux-arm64-gnu" "0.1.81"
-    "@cargo-messages/linux-arm64-musl" "0.1.81"
-    "@cargo-messages/linux-x64-gnu" "0.1.81"
-    "@cargo-messages/linux-x64-musl" "0.1.81"
-    "@cargo-messages/win32-arm64-msvc" "0.1.81"
-    "@cargo-messages/win32-x64-msvc" "0.1.81"
-
-"@neon-rs/load@^0.1.82":
-  version "0.1.82"
-  resolved "https://registry.yarnpkg.com/@neon-rs/load/-/load-0.1.82.tgz#7066547b5899ea2c5f40ff81b3939df0a4f6ce64"
-  integrity sha512-H4Gu2o5kPp+JOEhRrOQCnJnf7X6sv9FBLttM/wSbb4efsgFWeHzfU/ItZ01E5qqEk+U6QGdeVO7lxXIAtYHr5A==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -2035,6 +1974,13 @@ typescript@^6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-6.0.2.tgz#0b1bfb15f68c64b97032f3d78abbf98bdbba501f"
   integrity sha512-bGdAIrZ0wiGDo5l8c++HWtbaNCWTS4UTv7RaTH/ThVIgjkveJt83m74bBHMJkuCbslY8ixgLBVZJIOiQlQTjfQ==
+
+ui-build-compression@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/ui-build-compression/-/ui-build-compression-1.1.4.tgz#697198e0ab41a15a822a679460a4c31080187f86"
+  integrity sha512-MT/VXYaOgx4CJgEjynG5ByFcQk3QvTWD6hUGu6du/MSwGzKTQrC+a+beIqqNkVCHospXNFbqa7MbVRjY9/FIDA==
+  dependencies:
+    "@figliolia/child-process" "^1.0.4"
 
 unconfig-core@^7.5.0:
   version "7.5.0"

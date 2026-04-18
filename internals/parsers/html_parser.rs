@@ -1,5 +1,5 @@
 use htmler::{Html, Selector};
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, path::PathBuf, process::exit};
 
 use crate::{
     logger::logger::Logger,
@@ -61,6 +61,6 @@ impl HTMLParser {
             return (scripts, links);
         }
         Logger::panic_with_error("Internal error - file bug");
-        panic!()
+        exit(1);
     }
 }

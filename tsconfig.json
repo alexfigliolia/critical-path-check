@@ -3,11 +3,9 @@
   "compilerOptions": {
     "module": "nodenext",
     "declaration": true,
-    "outDir": "lib",
     "types": ["node"],
     "esModuleInterop": true
   },
-  "include": ["**/*.ts*"],
   "exclude": [
     "lib",
     "node_modules",
