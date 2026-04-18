@@ -1,6 +1,6 @@
 {
   "name": "critical-path-check",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A critical path analysis tool powered by rust",
   "keywords": [
     "ci",
@@ -28,17 +28,17 @@
     "Cargo.toml",
     "install.sh"
   ],
-  "main": "./lib/index.cjs",
-  "types": "./lib/index.d.cts",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.cts",
   "exports": {
     ".": {
       "import": {
-        "types": "./lib/index.d.mts",
-        "default": "./lib/index.mjs"
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
       },
       "require": {
-        "types": "./lib/index.d.cts",
-        "default": "./lib/index.cjs"
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
       }
     }
   },
