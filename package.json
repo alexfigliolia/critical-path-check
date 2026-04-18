@@ -1,6 +1,6 @@
 {
-  "name": "@bolte/critical-path",
-  "version": "1.0.0",
+  "name": "critical-path-check",
+  "version": "1.0.1",
   "description": "A critical path analysis tool powered by rust",
   "keywords": [
     "ci",

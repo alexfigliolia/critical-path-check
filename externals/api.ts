@@ -12,7 +12,7 @@ import type { CriticalPathAnalysis } from "./types";
  * will also return an unresolvable paths encountered during the analysis
  *
  * ```typescript
- * import { analyzeCriticalPath } from "@bolte/critical-path";
+ * import { analyzeCriticalPath } from "critical-path-check";
  *
  * test("Critical Path should never exceed N bytes", async () => {
  *   const buildPath = path.join(process.cwd(), "dist", "index.html");
@@ -45,7 +45,7 @@ export async function analyzeCriticalPath(path: string) {
  * does not exceed the input threshold bytes.
  *
  * ```typescript
- * import { assertCriticalPath } from "@bolte/critical-path";
+ * import { assertCriticalPath } from "critical-path-check";
  *
  * test("Critical Path should never exceed N bytes", async () => {
  *   const buildPath = path.join(process.cwd(), "dist", "index.html");
@@ -63,7 +63,7 @@ export async function assertCriticalPath(path: string, bytes: number) {
  * Returns true if the weight of critical HTML does not exceed the input threshold bytes.
  *
  * ```typescript
- * import { assertCriticalHTML } from "@bolte/critical-path";
+ * import { assertCriticalHTML } from "critical-path-check";
  *
  * test("Critical HTML should never exceed N bytes", async () => {
  *   const buildPath = path.join(process.cwd(), "dist", "index.html");
@@ -82,7 +82,7 @@ export async function assertCriticalHTML(path: string, bytes: number) {
  * Returns true if the weight of critical CSS does not exceed the input threshold bytes.
  *
  * ```typescript
- * import { assertCriticalCSS } from "@bolte/critical-path";
+ * import { assertCriticalCSS } from "critical-path-check";
  *
  * test("Critical CSS should never exceed N bytes", async () => {
  *   const buildPath = path.join(process.cwd(), "dist", "index.html");
@@ -101,7 +101,7 @@ export async function assertCriticalCSS(path: string, bytes: number) {
  * Returns true if the combined weight of critical JS does not exceed the input threshold bytes.
  *
  * ```typescript
- * import { assertCriticalJavaScript } from "@bolte/critical-path";
+ * import { assertCriticalJavaScript } from "critical-path-check";
  *
  * test("Critical CSS should never exceed N bytes", async () => {
  *   const buildPath = path.join(process.cwd(), "dist", "index.html");
@@ -120,7 +120,7 @@ export async function assertCriticalJavaScript(path: string, bytes: number) {
  * Returns the combined weight of critical HTML, CSS, and JavaScript in bytes
  *
  * ```typescript
- * import { measureCriticalPath } from "@bolte/critical-path";
+ * import { measureCriticalPath } from "critical-path-check";
  *
  * test("Critical CSS should never exceed N bytes", async () => {
  *   const buildPath = path.join(process.cwd(), "dist", "index.html");
@@ -140,7 +140,7 @@ export async function measureCriticalPath(path: string) {
  * to `stdout`
  *
  * ```typescript
- * import { cli } from "@bolte/critical-path";
+ * import { cli } from "critical-path-check";
  *
  * cli("/path/to/index.html");
  * ```
