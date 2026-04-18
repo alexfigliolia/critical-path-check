@@ -61,8 +61,7 @@
   },
   "dependencies": {
     "@figliolia/child-process": "^1.0.4",
-    "@figliolia/semver": "^1.0.0",
-    "ui-build-compression": "^1.1.4"
+    "@figliolia/semver": "^1.0.0"
   },
   "devDependencies": {
     "@oxc-node/core": "^0.1.0",

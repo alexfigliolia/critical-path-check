@@ -1975,13 +1975,6 @@ typescript@^6.0.2:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-6.0.2.tgz#0b1bfb15f68c64b97032f3d78abbf98bdbba501f"
   integrity sha512-bGdAIrZ0wiGDo5l8c++HWtbaNCWTS4UTv7RaTH/ThVIgjkveJt83m74bBHMJkuCbslY8ixgLBVZJIOiQlQTjfQ==
 
-ui-build-compression@^1.1.4:
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/ui-build-compression/-/ui-build-compression-1.1.4.tgz#697198e0ab41a15a822a679460a4c31080187f86"
-  integrity sha512-MT/VXYaOgx4CJgEjynG5ByFcQk3QvTWD6hUGu6du/MSwGzKTQrC+a+beIqqNkVCHospXNFbqa7MbVRjY9/FIDA==
-  dependencies:
-    "@figliolia/child-process" "^1.0.4"
-
 unconfig-core@^7.5.0:
   version "7.5.0"
   resolved "https://registry.yarnpkg.com/unconfig-core/-/unconfig-core-7.5.0.tgz#68f3d000701288418f3d36203d886f38c3986677"
