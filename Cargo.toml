@@ -1,6 +1,6 @@
 [package]
 name = "critical-path-check"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2024"
 description = "A critical path measurement tool designed for both local and remote builds"
 license = "MIT"
