@@ -1,4 +1,12 @@
-use std::{collections::VecDeque, path::PathBuf};
+use std::{
+    collections::VecDeque,
+    fs::File,
+    io::{BufRead, BufReader},
+    path::PathBuf,
+    sync::LazyLock,
+};
+
+use regex::Regex;
 
 use crate::{
     logger::logger::Logger,
@@ -7,10 +15,9 @@ use crate::{
         traverser::{CriticalPath, Traverser},
     },
 };
-use swc_common::{FileName, SourceMap};
-use swc_common::{SourceFile, sync::Lrc};
-use swc_ecma_ast::{ModuleDecl, ModuleItem};
-use swc_ecma_parser::{Parser, StringInput, Syntax};
+
+static IMPORT_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(import\s?|from\s?)['"]([^'"]+)['"]"#).unwrap());
 
 pub struct JavaScriptParser {
     builder: CriticalPath,
@@ -29,16 +36,23 @@ impl JavaScriptParser {
         }
     }
 
-    fn to_source_file(
+    fn detect_import_paths(
         &self,
         file: &FileResolutionStrategy,
         origin: &FileResolutionStrategy,
-    ) -> Option<Lrc<SourceFile>> {
+    ) -> Option<(usize, Vec<String>)> {
         match file {
             FileResolutionStrategy::Local(path) => {
-                let source_map: Lrc<SourceMap> = Default::default();
-                if let Ok(source_file) = source_map.load_file(path) {
-                    return Some(source_file);
+                if let Ok(file_interface) = File::open(path)
+                    && let Ok(meta) = file_interface.metadata()
+                {
+                    let mut referenced_files: Vec<String> = Vec::new();
+                    let bytes = meta.len() as usize;
+                    let buffer = BufReader::new(file_interface);
+                    for line in buffer.lines().flatten() {
+                        referenced_files.append(&mut self.capture_regex_matches(&line));
+                    }
+                    return Some((bytes, referenced_files));
                 }
                 FilePaths::store_unresolved_path(origin, &FilePaths::hash(file));
                 Logger::failed_to_parse_file(&FilePaths::to_string(path));
@@ -46,17 +60,23 @@ impl JavaScriptParser {
             }
             FileResolutionStrategy::Http(url) => {
                 if let Some(content) = FilePaths::fetch_resource(url) {
-                    let source_map = SourceMap::default();
-                    let file_name = url.to_owned();
-                    return Some(
-                        source_map.new_source_file(FileName::Custom(file_name).into(), content),
-                    );
+                    let bytes = content.len();
+                    return Some((bytes, self.capture_regex_matches(&content)));
                 }
                 FilePaths::store_unresolved_path(origin, url);
                 Logger::failed_to_load_file(url);
                 None
             }
         }
+    }
+
+    fn capture_regex_matches(&self, content: &str) -> Vec<String> {
+        let mut referenced_files: Vec<String> = Vec::new();
+        let matches = IMPORT_REGEX.captures_iter(content);
+        for capture in matches {
+            referenced_files.push(capture[2].to_owned());
+        }
+        referenced_files
     }
 }
 
@@ -76,45 +96,30 @@ impl Traverser for JavaScriptParser {
             return;
         }
         self.builder.visited.insert(key);
-        if let Some(source_file) = self.to_source_file(&file, origin) {
-            self.builder.weight += source_file.byte_length() as usize;
-            let mut parser = Parser::new(
-                Syntax::Es(Default::default()),
-                StringInput::from(&*source_file),
-                None,
-            );
-            if let Ok(module) = parser.parse_module() {
-                for item in module.body {
-                    if let ModuleItem::ModuleDecl(ModuleDecl::Import(import_decl)) = item
-                        && let Some(reference) = import_decl.src.value.as_str()
-                    {
-                        match file {
-                            FileResolutionStrategy::Http(_) => {
-                                let file_system = FilePaths::new(&self.builder.root_directory);
-                                if let Some(strategy) =
-                                    file_system.resolve_file(reference, &Vec::new())
-                                {
-                                    self.builder.stack.push_back((strategy, file.clone()));
-                                } else {
-                                    self.import_reference_error(&file, reference);
-                                }
-                            }
-                            FileResolutionStrategy::Local(ref path) => {
-                                let root = path.parent().unwrap_or(path).to_path_buf();
-                                let file_system = FilePaths::new(&root);
-                                if let Some(strategy) =
-                                    file_system.resolve_file(reference, &self.resolution_roots)
-                                {
-                                    self.builder.stack.push_back((strategy, file.clone()));
-                                } else {
-                                    self.import_reference_error(&file, reference);
-                                }
-                            }
+        if let Some((bytes, import_paths)) = self.detect_import_paths(&file, origin) {
+            self.builder.weight += bytes;
+            for reference in import_paths {
+                match file {
+                    FileResolutionStrategy::Http(_) => {
+                        let file_system = FilePaths::new(&self.builder.root_directory);
+                        if let Some(strategy) = file_system.resolve_file(&reference, &Vec::new()) {
+                            self.builder.stack.push_back((strategy, file.clone()));
+                        } else {
+                            self.import_reference_error(&file, &reference);
+                        }
+                    }
+                    FileResolutionStrategy::Local(ref path) => {
+                        let root = path.parent().unwrap_or(path).to_path_buf();
+                        let file_system = FilePaths::new(&root);
+                        if let Some(strategy) =
+                            file_system.resolve_file(&reference, &self.resolution_roots)
+                        {
+                            self.builder.stack.push_back((strategy, file.clone()));
+                        } else {
+                            self.import_reference_error(&file, &reference);
                         }
                     }
                 }
-            } else {
-                Logger::failed_to_parse_file(&FilePaths::hash(&file));
             }
         }
     }
