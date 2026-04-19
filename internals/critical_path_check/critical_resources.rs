@@ -5,12 +5,14 @@ use std::{
     process::exit,
 };
 
+use regex::Regex;
 
 use crate::{
     logger::logger::Logger,
     parsers::{
-        css_parser::CSSParser, file_paths::FileResolutionStrategy, html_parser::HTMLParser,
-        javascript_parser::JavaScriptParser, traverser::Traverser,
+        critical_path_parser::CriticalPathParser,
+        file_paths::{FilePaths, FileResolutionStrategy},
+        html_parser::HTMLParser,
     },
 };
 
@@ -43,13 +45,20 @@ impl CriticalResources {
         let build_directory = self.html_directory();
         let mut html_parser = HTMLParser::new(&self.root_html, &build_directory);
         html_parser.build(&html_content);
-        self.javascript_weight = JavaScriptParser::new(
+        self.javascript_weight = CriticalPathParser::new(
             &build_directory,
             self.to_stack(&html_parser.javascript_paths),
+            Regex::new(r#"(import\s*?|from\s*?)['"]([^'"]+)['"]"#).unwrap(),
+            2,
         )
-        .traverse();
-        self.css_weight =
-            CSSParser::new(&build_directory, self.to_stack(&html_parser.css_paths)).traverse();
+        .analyze();
+        self.css_weight = CriticalPathParser::new(
+            &build_directory,
+            self.to_stack(&html_parser.css_paths),
+            Regex::new(r#"@(import\s*?(url\()?)['"]([^'"]+)['"]"#).unwrap(),
+            3,
+        )
+        .analyze();
     }
 
     pub fn total_weight(&self) -> usize {
@@ -68,6 +77,37 @@ impl CriticalResources {
         let total = self.total_weight();
         Logger::green("Combined");
         Logger::log_stat(total);
+    }
+
+    pub fn to_json_str(&self) -> String {
+        let mut json_tokens: Vec<String> = Vec::new();
+        json_tokens.push("{".to_string());
+        json_tokens.push(format!("\"htmlWeight\":{},", self.html_weight));
+        json_tokens.push(format!("\"cssWeight\":{},", self.css_weight));
+        json_tokens.push(format!("\"javascriptWeight\":{},", self.javascript_weight));
+        json_tokens.push("\"unresolvedPaths\": {".to_string());
+        let unresolved_paths = FilePaths::unresolved_paths();
+        if !unresolved_paths.is_empty() {
+            let max_root_index = unresolved_paths.len() - 1;
+            for (root_idx, (root, paths)) in unresolved_paths.iter().enumerate() {
+                json_tokens.push(format!("\"{}\":[", root));
+                let max_paths_index = paths.len() - 1;
+                for (path_idx, path) in paths.iter().enumerate() {
+                    if path_idx == max_paths_index {
+                        json_tokens.push(format!("\"{path}\""));
+                    } else {
+                        json_tokens.push(format!("\"{path}\","));
+                    }
+                }
+                if root_idx == max_root_index {
+                    json_tokens.push("]".to_string());
+                } else {
+                    json_tokens.push("],".to_string());
+                }
+            }
+        }
+        json_tokens.push("}}".to_string());
+        json_tokens.join("")
     }
 
     fn html_directory(&self) -> PathBuf {

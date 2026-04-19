@@ -7,7 +7,7 @@ use std::{
 
 use colored::Colorize;
 use normalize_path::NormalizePath;
-use url::Url;
+use regex::Regex;
 
 use crate::logger::logger::Logger;
 
@@ -24,6 +24,9 @@ pub struct FilePaths {
 
 static UNRESOLVED_PATHS: LazyLock<Mutex<HashMap<String, HashSet<String>>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
+
+static URL_PATH_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"https?:\/\/.*?\/([^\?]+)"#).unwrap());
 
 impl FilePaths {
     pub fn new(root_directory: &PathBuf) -> Self {
@@ -64,9 +67,10 @@ impl FilePaths {
     ) -> Option<FileResolutionStrategy> {
         let mut relative_path = String::from(path);
         if path.starts_with("http")
-            && let Ok(url) = Url::parse(path)
+            && let Some(captures) = URL_PATH_REGEX.captures_iter(&relative_path).nth(0)
+            && let Some(path) = captures.get(1)
         {
-            relative_path = url.path().to_string();
+            relative_path = path.as_str().to_string();
         }
         if relative_path.starts_with("/") {
             relative_path.remove(0);
@@ -75,9 +79,9 @@ impl FilePaths {
             let mut roots = Vec::from_iter(additional_roots);
             roots.insert(0, &self.root_directory);
             for root_directory in roots {
-                let absolute_path = root_directory.join(&relative_path).normalize();
+                let absolute_path = root_directory.join(&relative_path);
                 if absolute_path.exists() {
-                    return Some(FileResolutionStrategy::Local(absolute_path));
+                    return Some(FileResolutionStrategy::Local(absolute_path.normalize()));
                 }
             }
         }
@@ -95,10 +99,10 @@ impl FilePaths {
     }
 
     pub fn fetch_resource(url: &str) -> Option<String> {
-        if let Ok(response) = reqwest::blocking::get(url)
-            && let Ok(text) = response.text()
+        if let Ok(response) = minreq::get(url).send()
+            && let Ok(body) = response.as_str()
         {
-            return Some(text);
+            return Some(body.to_owned());
         }
         None
     }

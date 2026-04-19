@@ -7,8 +7,7 @@ use std::{
 use colored::Colorize;
 
 use crate::{
-    critical_path_check::{critical_resources::CriticalResources, json_result::JSONResult},
-    logger::logger::Logger,
+    critical_path_check::critical_resources::CriticalResources, logger::logger::Logger,
     parsers::file_paths::FilePaths,
 };
 
@@ -184,8 +183,7 @@ impl CriticalPathCheck {
     pub fn as_json(&self) {
         let mut analysis = CriticalResources::new(&self.root_html);
         analysis.build();
-        let json_result = JSONResult::from(analysis);
-        println!("{}", json_result.to_string());
+        println!("{}", analysis.to_json_str());
     }
 
     fn validate_path_string(root_html: &str) -> PathBuf {
