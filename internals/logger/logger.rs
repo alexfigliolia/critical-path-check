@@ -77,14 +77,15 @@ impl Logger {
     }
 
     fn to_value(value: &str) -> String {
-        let tokens: Vec<&str> = value.split(".").collect();
+        let tokens: Vec<&str> = value.split(".").filter(|t| !t.is_empty()).collect();
         if tokens.is_empty() {
             return "0".to_owned();
         }
+        let left_of_decimal = Logger::commafy(tokens[0].to_string());
         if tokens.len() == 1 {
-            return Logger::commafy(tokens[0].to_string());
+            return left_of_decimal;
         }
-        format!("{}.{}", Logger::commafy(tokens[0].to_string()), tokens[1])
+        format!("{}.{}", left_of_decimal, tokens[1])
     }
 
     fn commafy(s: String) -> String {

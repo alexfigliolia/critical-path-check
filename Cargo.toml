@@ -1,6 +1,6 @@
 [package]
 name = "critical-path-check"
-version = "1.0.3"
+version = "1.0.4"
 edition = "2024"
 description = "A critical path measurement tool designed for both local and remote builds"
 license = "MIT"
@@ -25,14 +25,7 @@ name = "critical_path_check"
 path = "internals/lib.rs"
 
 [dependencies]
-clap = { version = "4.6.1", features = ["derive"] }
 colored = "3.1.1"
-html-ast = "0.1.0"
-htmler = "0.1.1"
-lightningcss = "1.0.0-alpha.71"
+minreq = { version = "2.14.1", features = ["https"] }
 normalize-path = "0.2.1"
 regex = "1.12.3"
-reqwest = { version = "0.13.2", features = ["blocking"] }
-serde = "1.0.228"
-serde_json = "1.0.149"
-url = "2.5.8"
