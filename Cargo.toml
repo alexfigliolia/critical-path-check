@@ -26,8 +26,6 @@ path = "internals/lib.rs"
 
 [dependencies]
 colored = "3.1.1"
-futures = "0.3.32"
 minreq = { version = "2.14.1", features = ["https"] }
 normalize-path = "0.2.1"
 regex = "1.12.3"
-tokio-thread-pool = "1.0.0"
