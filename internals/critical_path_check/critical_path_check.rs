@@ -7,12 +7,13 @@ use std::{
 use colored::Colorize;
 
 use crate::{
-    critical_path_check::critical_resources::CriticalResources, logger::logger::Logger,
-    parsers::file_paths::FilePaths,
+    critical_path_check::critical_resources::CriticalResources,
+    logger::logger::Logger,
+    parsers::file_paths::{FilePaths, FileResolutionStrategy},
 };
 
 pub struct CriticalPathCheck {
-    root_html: PathBuf,
+    root_html: FileResolutionStrategy,
 }
 
 /// Utilities for analyzing the critical render path of a web application
@@ -39,7 +40,7 @@ pub struct CriticalPathAnalysis {
 impl CriticalPathCheck {
     /// ## new
     ///
-    /// Given an `&str` representing an absolute path to an HTML file,
+    /// Given an `&str` representing an absolute path or URL of an HTML file,
     /// spawns an instance of the `CriticalPathCheck` scoped to that
     /// file
     ///
@@ -48,7 +49,7 @@ impl CriticalPathCheck {
     /// ```
     pub fn new(root_html: &str) -> Self {
         CriticalPathCheck {
-            root_html: CriticalPathCheck::validate_path_string(root_html),
+            root_html: CriticalPathCheck::to_resolver(root_html),
         }
     }
 
@@ -62,9 +63,9 @@ impl CriticalPathCheck {
     /// let my_path = PathBuf::from("/path/to/index.html");
     /// let cp_check = CriticalPathCheck::from(&my_path);
     /// ```
-    pub fn from(root_html: &PathBuf) -> Self {
+    pub fn from_path_buf(root_html: &PathBuf) -> Self {
         CriticalPathCheck {
-            root_html: CriticalPathCheck::validate_path(root_html),
+            root_html: FileResolutionStrategy::Local(CriticalPathCheck::validate_path(root_html)),
         }
     }
 
@@ -186,9 +187,12 @@ impl CriticalPathCheck {
         println!("{}", analysis.to_json_str());
     }
 
-    fn validate_path_string(root_html: &str) -> PathBuf {
+    fn to_resolver(root_html: &str) -> FileResolutionStrategy {
+        if root_html.starts_with("http") {
+            return FileResolutionStrategy::Http(root_html.to_owned());
+        }
         let path = PathBuf::from(root_html);
-        CriticalPathCheck::validate_path(&path)
+        FileResolutionStrategy::Local(CriticalPathCheck::validate_path(&path))
     }
 
     fn validate_path(path: &Path) -> PathBuf {

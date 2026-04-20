@@ -19,7 +19,7 @@ pub enum FileResolutionStrategy {
 
 #[derive(Clone)]
 pub struct FilePaths {
-    pub root_directory: PathBuf,
+    pub root_directory: FileResolutionStrategy,
 }
 
 static UNRESOLVED_PATHS: LazyLock<Mutex<HashMap<String, HashSet<String>>>> =
@@ -28,8 +28,11 @@ static UNRESOLVED_PATHS: LazyLock<Mutex<HashMap<String, HashSet<String>>>> =
 static URL_PATH_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"https?:\/\/.*?\/([^\?]+)"#).unwrap());
 
+static URL_PROTOCOL_AND_PATH_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"^(.*):\/\/(.*)"#).unwrap());
+
 impl FilePaths {
-    pub fn new(root_directory: &PathBuf) -> Self {
+    pub fn new(root_directory: &FileResolutionStrategy) -> Self {
         FilePaths {
             root_directory: root_directory.to_owned(),
         }
@@ -65,30 +68,51 @@ impl FilePaths {
         path: &str,
         additional_roots: &Vec<PathBuf>,
     ) -> Option<FileResolutionStrategy> {
-        let mut relative_path = String::from(path);
-        if path.starts_with("http")
-            && let Some(captures) = URL_PATH_REGEX.captures_iter(&relative_path).nth(0)
-            && let Some(path) = captures.get(1)
-        {
-            relative_path = path.as_str().to_string();
-        }
-        if relative_path.starts_with("/") {
-            relative_path.remove(0);
-        }
-        if !relative_path.is_empty() {
-            let mut roots = Vec::from_iter(additional_roots);
-            roots.insert(0, &self.root_directory);
-            for root_directory in roots {
-                let absolute_path = root_directory.join(&relative_path);
-                if absolute_path.exists() {
-                    return Some(FileResolutionStrategy::Local(absolute_path.normalize()));
+        let is_http_path = path.starts_with("http");
+        match &self.root_directory {
+            FileResolutionStrategy::Http(url) => {
+                if is_http_path {
+                    return Some(FileResolutionStrategy::Http(path.to_owned()));
                 }
+                if let Some(captures) = URL_PROTOCOL_AND_PATH_REGEX.captures(url)
+                    && let Some(protocol) = captures.get(1)
+                    && let Some(origin) = captures.get(2)
+                    && let Some(joined) = Path::new(origin.as_str()).join(path).normalize().to_str()
+                {
+                    return Some(FileResolutionStrategy::Http(format!(
+                        "{}://{joined}",
+                        protocol.as_str()
+                    )));
+                }
+                None
+            }
+            FileResolutionStrategy::Local(root_directory) => {
+                let mut relative_path = String::from(path);
+                if is_http_path
+                    && let Some(captures) = URL_PATH_REGEX.captures(&relative_path)
+                    && let Some(path) = captures.get(1)
+                {
+                    relative_path = path.as_str().to_string();
+                }
+                if relative_path.starts_with("/") {
+                    relative_path.remove(0);
+                }
+                if !relative_path.is_empty() {
+                    let mut roots = Vec::from_iter(additional_roots);
+                    roots.insert(0, root_directory);
+                    for root_dir in roots {
+                        let absolute_path = root_dir.join(&relative_path);
+                        if absolute_path.exists() {
+                            return Some(FileResolutionStrategy::Local(absolute_path.normalize()));
+                        }
+                    }
+                }
+                if path.starts_with("http") {
+                    return Some(FileResolutionStrategy::Http(path.to_owned()));
+                }
+                None
             }
         }
-        if path.starts_with("http") {
-            return Some(FileResolutionStrategy::Http(path.to_owned()));
-        }
-        None
     }
 
     pub fn read_resource(path: &PathBuf) -> Option<String> {
