@@ -1,11 +1,12 @@
 use std::{
     collections::{HashMap, VecDeque},
-    fs::read_to_string,
-    path::PathBuf,
     process::exit,
+    sync::LazyLock,
 };
 
 use regex::Regex;
+
+static URL_PARENT_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"^(.*)\/"#).unwrap());
 
 use crate::{
     logger::logger::Logger,
@@ -17,14 +18,14 @@ use crate::{
 };
 
 pub struct CriticalResources {
-    pub root_html: PathBuf,
     pub html_weight: usize,
     pub javascript_weight: usize,
     pub css_weight: usize,
+    pub root_html: FileResolutionStrategy,
 }
 
 impl CriticalResources {
-    pub fn new(root_html: &PathBuf) -> Self {
+    pub fn new(root_html: &FileResolutionStrategy) -> Self {
         CriticalResources {
             html_weight: 0,
             javascript_weight: 0,
@@ -34,11 +35,9 @@ impl CriticalResources {
     }
 
     pub fn build(&mut self) {
-        let result = read_to_string(&self.root_html);
-        if let Err(error) = &result {
-            Logger::panic_with_error(
-                format!("Failed to parse the root HTML file {}", error).as_str(),
-            );
+        let result = self.resolve_root();
+        if result.is_none() {
+            Logger::panic_with_error("Failed to parse the root HTML file");
         }
         let html_content = result.unwrap();
         self.html_weight += html_content.len();
@@ -110,23 +109,44 @@ impl CriticalResources {
         json_tokens.join("")
     }
 
-    fn html_directory(&self) -> PathBuf {
-        if let Some(parent_dir) = self.root_html.parent() {
-            return parent_dir.to_path_buf();
+    fn html_directory(&self) -> FileResolutionStrategy {
+        match &self.root_html {
+            FileResolutionStrategy::Http(url) => {
+                if url.ends_with(".html")
+                    && let Some(result) = URL_PARENT_REGEX.captures(url)
+                    && let Some(first_match) = result.get(1)
+                {
+                    return FileResolutionStrategy::Http(first_match.as_str().to_string());
+                }
+                self.root_html.clone()
+            }
+            FileResolutionStrategy::Local(path) => {
+                if let Some(parent_dir) = path.parent() {
+                    return FileResolutionStrategy::Local(parent_dir.to_path_buf());
+                }
+                Logger::panic_with_error("I was unable to determine the HTML's directory");
+                exit(1);
+            }
         }
-        Logger::panic_with_error("I was unable to determine the HTML's directory");
-        exit(1);
     }
 
     fn to_stack(
         &self,
         paths: &HashMap<String, FileResolutionStrategy>,
     ) -> VecDeque<(FileResolutionStrategy, FileResolutionStrategy)> {
-        VecDeque::from_iter(paths.values().map(|entry| {
-            (
-                entry.to_owned(),
-                FileResolutionStrategy::Local(self.root_html.clone()),
-            )
-        }))
+        VecDeque::from_iter(
+            paths
+                .values()
+                .map(|entry| (entry.to_owned(), self.root_html.clone())),
+        )
+    }
+
+    fn resolve_root(&self) -> Option<String> {
+        match &self.root_html {
+            FileResolutionStrategy::Http(url) => {
+                FilePaths::fetch_resource(url)
+            }
+            FileResolutionStrategy::Local(path) => FilePaths::read_resource(path),
+        }
     }
 }

@@ -25,5 +25,5 @@ pub mod parsers;
 /// println!("Total HTML Bytes: {}", result.analysis.html_weight);
 /// ```
 pub fn analyze_critical_path(path: &PathBuf) -> CriticalPathAnalysis {
-    CriticalPathCheck::from(path).run()
+    CriticalPathCheck::from_path_buf(path).run()
 }

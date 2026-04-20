@@ -1,6 +1,6 @@
 [package]
 name = "critical-path-check"
-version = "1.0.4"
+version = "1.1.0"
 edition = "2024"
 description = "A critical path measurement tool designed for both local and remote builds"
 license = "MIT"
@@ -26,6 +26,8 @@ path = "internals/lib.rs"
 
 [dependencies]
 colored = "3.1.1"
+futures = "0.3.32"
 minreq = { version = "2.14.1", features = ["https"] }
 normalize-path = "0.2.1"
 regex = "1.12.3"
+tokio-thread-pool = "1.0.0"

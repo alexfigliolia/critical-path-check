@@ -12,13 +12,14 @@ use crate::{
     parsers::file_paths::{FilePaths, FileResolutionStrategy},
 };
 
+#[derive(Clone)]
 struct ParsingConfiguration {
     pub regex: Regex,
     pub capture_position: usize,
 }
 
 struct DirectoryScope {
-    pub root_directory: PathBuf,
+    pub root_directory: FileResolutionStrategy,
     pub resolution_roots: Vec<PathBuf>,
 }
 
@@ -32,11 +33,15 @@ pub struct CriticalPathParser {
 
 impl CriticalPathParser {
     pub fn new(
-        root_directory: &PathBuf,
+        root_directory: &FileResolutionStrategy,
         stack: VecDeque<(FileResolutionStrategy, FileResolutionStrategy)>,
         regex: Regex,
         capture_position: usize,
     ) -> Self {
+        let mut resolution_roots: Vec<PathBuf> = Vec::new();
+        if let FileResolutionStrategy::Local(path) = root_directory {
+            resolution_roots.push(path.to_owned());
+        }
         CriticalPathParser {
             stack,
             weight: 0,
@@ -46,8 +51,8 @@ impl CriticalPathParser {
                 capture_position,
             },
             scope: DirectoryScope {
+                resolution_roots,
                 root_directory: root_directory.to_owned(),
-                resolution_roots: [root_directory.to_owned()].to_vec(),
             },
         }
     }
@@ -81,7 +86,7 @@ impl CriticalPathParser {
                     }
                     FileResolutionStrategy::Local(ref path) => {
                         let root = path.parent().unwrap_or(path).to_path_buf();
-                        let file_system = FilePaths::new(&root);
+                        let file_system = FilePaths::new(&FileResolutionStrategy::Local(root));
                         if let Some(strategy) =
                             file_system.resolve_file(&reference, &self.scope.resolution_roots)
                         {
@@ -101,11 +106,14 @@ impl CriticalPathParser {
     }
 
     fn detect_import_paths(
-        &self,
+        &mut self,
         file: &FileResolutionStrategy,
         origin: &FileResolutionStrategy,
     ) -> Option<(usize, Vec<String>)> {
-        match file {
+        let parser = self.parser.clone();
+        let file_clone = file.clone();
+        let origin_clone = origin.clone();
+        match &file_clone {
             FileResolutionStrategy::Local(path) => {
                 if let Ok(file_interface) = File::open(path)
                     && let Ok(meta) = file_interface.metadata()
@@ -114,31 +122,36 @@ impl CriticalPathParser {
                     let bytes = meta.len() as usize;
                     let buffer = BufReader::new(file_interface);
                     for line in buffer.lines().flatten() {
-                        referenced_files.append(&mut self.capture_regex_matches(&line));
+                        referenced_files.append(&mut CriticalPathParser::capture_regex_matches(
+                            &parser, &line,
+                        ));
                     }
                     return Some((bytes, referenced_files));
                 }
-                FilePaths::store_unresolved_path(origin, &FilePaths::hash(file));
+                FilePaths::store_unresolved_path(&origin_clone, &FilePaths::hash(&file_clone));
                 Logger::failed_to_parse_file(&FilePaths::to_string(path));
                 None
             }
             FileResolutionStrategy::Http(url) => {
                 if let Some(content) = FilePaths::fetch_resource(url) {
                     let bytes = content.len();
-                    return Some((bytes, self.capture_regex_matches(&content)));
+                    return Some((
+                        bytes,
+                        CriticalPathParser::capture_regex_matches(&parser, &content),
+                    ));
                 }
-                FilePaths::store_unresolved_path(origin, url);
+                FilePaths::store_unresolved_path(&origin_clone, url);
                 Logger::failed_to_load_file(url);
                 None
             }
         }
     }
 
-    fn capture_regex_matches(&self, content: &str) -> Vec<String> {
+    fn capture_regex_matches(parser: &ParsingConfiguration, content: &str) -> Vec<String> {
         let mut referenced_files: Vec<String> = Vec::new();
-        let matches = self.parser.regex.captures_iter(content);
+        let matches = parser.regex.captures_iter(content);
         for capture in matches {
-            referenced_files.push(capture[self.parser.capture_position].to_owned());
+            referenced_files.push(capture[parser.capture_position].to_owned());
         }
         referenced_files
     }

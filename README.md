@@ -25,6 +25,11 @@ cargo add critical_path_check
 
 ### JavaScript API
 
+All methods exposed by the JavaScript API require a path to an HTML file. This path can be
+
+1. An absolute path to an HTML file locally on your machine
+2. The URL of a remote HTML file - ie - `https://github.com`
+
 #### `analyzeCriticalPath`
 
 Returns a critical path analysis containing the byte-weight of your
@@ -140,7 +145,9 @@ use critical_path_check::critical_path_check::CriticalPathCheck;
 
 /// using a string representing an absolute path to an HTML file
 let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
-/// or using an existing PathBuf
+/// or using a URL to a remotely hosted build
+let cp_check = CriticalPathCheck::new("https://my-app.com");
+/// or using a PathBuf
 let cp_check = CriticalPathCheck::from(PathBuf::from("/path/to/my/root.html"));
 ```
 
@@ -226,5 +233,5 @@ cp_check.run_cli();
 The critical path check can be used as a CLI simply by installing the crate and running
 
 ```bash
-critical-path-check /absolute/path/to/your-html.html
+critical-path-check /absolute/path/or/url/to/your-app.html
 ```
