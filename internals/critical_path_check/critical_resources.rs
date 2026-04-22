@@ -47,8 +47,8 @@ impl CriticalResources {
         self.javascript_weight = CriticalPathParser::new(
             &build_directory,
             self.to_stack(&html_parser.javascript_paths),
-            Regex::new(r#"(import\s*?|from\s*?)['"]([^'"]+)['"]"#).unwrap(),
-            2,
+            Regex::new(r#"import\s*?(?:.*?\s*from\s*?)?['"`](.*?)['"`]"#).unwrap(),
+            1,
         )
         .analyze();
         self.css_weight = CriticalPathParser::new(
@@ -143,9 +143,7 @@ impl CriticalResources {
 
     fn resolve_root(&self) -> Option<String> {
         match &self.root_html {
-            FileResolutionStrategy::Http(url) => {
-                FilePaths::fetch_resource(url)
-            }
+            FileResolutionStrategy::Http(url) => FilePaths::fetch_resource(url),
             FileResolutionStrategy::Local(path) => FilePaths::read_resource(path),
         }
     }
