@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env, process::exit, usize};
+use std::{collections::HashMap, env, process::exit};
 
 use colored::Colorize;
 

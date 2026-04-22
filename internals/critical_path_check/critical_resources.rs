@@ -1,8 +1,4 @@
-use std::{
-    collections::{HashMap, VecDeque},
-    process::exit,
-    sync::LazyLock,
-};
+use std::{collections::HashMap, process::exit, sync::LazyLock};
 
 use regex::Regex;
 
@@ -133,8 +129,8 @@ impl CriticalResources {
     fn to_stack(
         &self,
         paths: &HashMap<String, FileResolutionStrategy>,
-    ) -> VecDeque<(FileResolutionStrategy, FileResolutionStrategy)> {
-        VecDeque::from_iter(
+    ) -> Vec<(FileResolutionStrategy, FileResolutionStrategy)> {
+        Vec::from_iter(
             paths
                 .values()
                 .map(|entry| (entry.to_owned(), self.root_html.clone())),
