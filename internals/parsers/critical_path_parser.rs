@@ -1,5 +1,4 @@
 use std::{
-    collections::VecDeque,
     fs::File,
     io::{BufRead, BufReader},
     path::PathBuf,
@@ -19,14 +18,14 @@ use crate::{
 };
 
 pub struct CriticalPathParser {
-    pub stack: VecDeque<(FileResolutionStrategy, FileResolutionStrategy)>,
+    pub stack: Vec<(FileResolutionStrategy, FileResolutionStrategy)>,
     pub state: Arc<Mutex<SearchState>>,
 }
 
 impl CriticalPathParser {
     pub fn new(
         root_directory: &FileResolutionStrategy,
-        stack: VecDeque<(FileResolutionStrategy, FileResolutionStrategy)>,
+        stack: Vec<(FileResolutionStrategy, FileResolutionStrategy)>,
         regex: Regex,
         capture_position: usize,
     ) -> Self {
@@ -54,7 +53,7 @@ impl CriticalPathParser {
         let data = self.state.clone();
         let mut task_pool = JoinSet::<()>::new();
         while !self.stack.is_empty() {
-            if let Some((file, origin)) = self.stack.pop_back() {
+            if let Some((file, origin)) = self.stack.pop() {
                 let mutex = self.state.clone();
                 task_pool.spawn(CriticalPathParser::dfs(file, origin, mutex));
             }
