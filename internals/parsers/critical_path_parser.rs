@@ -1,34 +1,26 @@
 use std::{
-    collections::{HashSet, VecDeque},
+    collections::VecDeque,
     fs::File,
     io::{BufRead, BufReader},
     path::PathBuf,
+    sync::Arc,
 };
 
+use async_recursion::async_recursion;
 use regex::Regex;
+use tokio::{sync::Mutex, task::JoinSet};
 
 use crate::{
     logger::logger::Logger,
-    parsers::file_paths::{FilePaths, FileResolutionStrategy},
+    parsers::{
+        file_paths::{FilePaths, FileResolutionStrategy},
+        search_state::{DirectoryScope, ParsingConfiguration, SearchState},
+    },
 };
 
-#[derive(Clone)]
-struct ParsingConfiguration {
-    pub regex: Regex,
-    pub capture_position: usize,
-}
-
-struct DirectoryScope {
-    pub root_directory: FileResolutionStrategy,
-    pub resolution_roots: Vec<PathBuf>,
-}
-
 pub struct CriticalPathParser {
-    pub weight: usize,
-    pub visited: HashSet<String>,
     pub stack: VecDeque<(FileResolutionStrategy, FileResolutionStrategy)>,
-    parser: ParsingConfiguration,
-    scope: DirectoryScope,
+    pub state: Arc<Mutex<SearchState>>,
 }
 
 impl CriticalPathParser {
@@ -42,78 +34,107 @@ impl CriticalPathParser {
         if let FileResolutionStrategy::Local(path) = root_directory {
             resolution_roots.push(path.to_owned());
         }
-        CriticalPathParser {
+        Self {
             stack,
-            weight: 0,
-            visited: HashSet::new(),
-            parser: ParsingConfiguration {
-                regex,
-                capture_position,
-            },
-            scope: DirectoryScope {
-                resolution_roots,
-                root_directory: root_directory.to_owned(),
-            },
+            state: Arc::new(Mutex::new(SearchState::new(
+                ParsingConfiguration {
+                    regex,
+                    capture_position,
+                },
+                DirectoryScope {
+                    resolution_roots,
+                    root_directory: root_directory.to_owned(),
+                },
+            ))),
         }
     }
 
-    pub fn analyze(&mut self) -> usize {
+    #[tokio::main]
+    pub async fn analyze(&mut self) -> usize {
+        let data = self.state.clone();
+        let mut task_pool = JoinSet::<()>::new();
         while !self.stack.is_empty() {
             if let Some((file, origin)) = self.stack.pop_back() {
-                self.dfs(file, &origin);
+                let mutex = self.state.clone();
+                task_pool.spawn(CriticalPathParser::dfs(file, origin, mutex));
             }
         }
-        self.weight
+        task_pool.join_all().await;
+        data.lock().await.weight
     }
 
-    fn dfs(&mut self, file: FileResolutionStrategy, origin: &FileResolutionStrategy) {
-        let key = FilePaths::hash(&file);
-        if self.visited.contains(&key) {
+    #[async_recursion]
+    async fn dfs(
+        file: FileResolutionStrategy,
+        origin: FileResolutionStrategy,
+        state: Arc<Mutex<SearchState>>,
+    ) {
+        let key: String = FilePaths::hash(&file);
+        if !SearchState::read(&state, |v| v.visited.insert(key)).await {
             return;
         }
-        self.visited.insert(key);
-        if let Some((bytes, import_paths)) = self.detect_import_paths(&file, origin) {
-            self.weight += bytes;
+        let parse_results = CriticalPathParser::detect_import_paths(
+            &SearchState::read(&state, |v| v.parser.clone()).await,
+            &file,
+            &origin,
+        );
+        if let Some((bytes, import_paths)) = parse_results {
+            let directory_scope = SearchState::read(&state, |mut v| {
+                v.weight += bytes;
+                v.scope.clone()
+            })
+            .await;
+            let mut task_pool = JoinSet::<()>::new();
             for reference in import_paths {
                 match file {
                     FileResolutionStrategy::Http(_) => {
-                        let file_system = FilePaths::new(&self.scope.root_directory);
+                        let file_system = FilePaths::new(&directory_scope.root_directory);
                         if let Some(strategy) = file_system.resolve_file(&reference, &Vec::new()) {
-                            self.stack.push_back((strategy, file.clone()));
+                            let origin_clone = file.clone();
+                            let state_clone = state.clone();
+                            task_pool.spawn(CriticalPathParser::dfs(
+                                strategy,
+                                origin_clone,
+                                state_clone,
+                            ));
                         } else {
-                            self.import_reference_error(&file, &reference);
+                            CriticalPathParser::import_reference_error(&file, &reference);
                         }
                     }
                     FileResolutionStrategy::Local(ref path) => {
                         let root = path.parent().unwrap_or(path).to_path_buf();
                         let file_system = FilePaths::new(&FileResolutionStrategy::Local(root));
                         if let Some(strategy) =
-                            file_system.resolve_file(&reference, &self.scope.resolution_roots)
+                            file_system.resolve_file(&reference, &directory_scope.resolution_roots)
                         {
-                            self.stack.push_back((strategy, file.clone()));
+                            let origin_clone = file.clone();
+                            let state_clone = state.clone();
+                            task_pool.spawn(CriticalPathParser::dfs(
+                                strategy,
+                                origin_clone,
+                                state_clone,
+                            ));
                         } else {
-                            self.import_reference_error(&file, &reference);
+                            CriticalPathParser::import_reference_error(&file, &reference);
                         }
                     }
                 }
             }
+            task_pool.join_all().await;
         }
     }
 
-    fn import_reference_error(&self, origin: &FileResolutionStrategy, reference: &str) {
+    fn import_reference_error(origin: &FileResolutionStrategy, reference: &str) {
         FilePaths::store_unresolved_path(origin, reference);
         Logger::path_error(reference);
     }
 
     fn detect_import_paths(
-        &mut self,
+        parser: &ParsingConfiguration,
         file: &FileResolutionStrategy,
         origin: &FileResolutionStrategy,
     ) -> Option<(usize, Vec<String>)> {
-        let parser = self.parser.clone();
-        let file_clone = file.clone();
-        let origin_clone = origin.clone();
-        match &file_clone {
+        match &file {
             FileResolutionStrategy::Local(path) => {
                 if let Ok(file_interface) = File::open(path)
                     && let Ok(meta) = file_interface.metadata()
@@ -121,14 +142,14 @@ impl CriticalPathParser {
                     let mut referenced_files: Vec<String> = Vec::new();
                     let bytes = meta.len() as usize;
                     let buffer = BufReader::new(file_interface);
-                    for line in buffer.lines().flatten() {
+                    for line in buffer.lines().map_while(Result::ok) {
                         referenced_files.append(&mut CriticalPathParser::capture_regex_matches(
-                            &parser, &line,
+                            parser, &line,
                         ));
                     }
                     return Some((bytes, referenced_files));
                 }
-                FilePaths::store_unresolved_path(&origin_clone, &FilePaths::hash(&file_clone));
+                FilePaths::store_unresolved_path(origin, &FilePaths::hash(file));
                 Logger::failed_to_parse_file(&FilePaths::to_string(path));
                 None
             }
@@ -137,10 +158,10 @@ impl CriticalPathParser {
                     let bytes = content.len();
                     return Some((
                         bytes,
-                        CriticalPathParser::capture_regex_matches(&parser, &content),
+                        CriticalPathParser::capture_regex_matches(parser, &content),
                     ));
                 }
-                FilePaths::store_unresolved_path(&origin_clone, url);
+                FilePaths::store_unresolved_path(origin, url);
                 Logger::failed_to_load_file(url);
                 None
             }

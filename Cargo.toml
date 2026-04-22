@@ -25,7 +25,10 @@ name = "critical_path_check"
 path = "internals/lib.rs"
 
 [dependencies]
+async-recursion = "1.1.1"
 colored = "3.1.1"
+dashmap = "6.1.0"
 minreq = { version = "2.14.1", features = ["https"] }
 normalize-path = "0.2.1"
 regex = "1.12.3"
+tokio = { version = "1.52.1", features = ["full"] }

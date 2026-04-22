@@ -143,9 +143,7 @@ impl CriticalResources {
 
     fn resolve_root(&self) -> Option<String> {
         match &self.root_html {
-            FileResolutionStrategy::Http(url) => {
-                FilePaths::fetch_resource(url)
-            }
+            FileResolutionStrategy::Http(url) => FilePaths::fetch_resource(url),
             FileResolutionStrategy::Local(path) => FilePaths::read_resource(path),
         }
     }
