@@ -1,6 +1,7 @@
 use std::{collections::HashMap, process::exit, sync::LazyLock};
 
 use regex::Regex;
+use tokio::join;
 
 static URL_PARENT_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"^(.*)\/"#).unwrap());
 
@@ -40,20 +41,9 @@ impl CriticalResources {
         let build_directory = self.html_directory();
         let mut html_parser = HTMLParser::new(&self.root_html, &build_directory);
         html_parser.build(&html_content);
-        self.javascript_weight = CriticalPathParser::new(
-            &build_directory,
-            self.to_stack(&html_parser.javascript_paths),
-            Regex::new(r#"import\s*?(?:.*?\s*from\s*?)?['"`](.*?)['"`]"#).unwrap(),
-            1,
-        )
-        .analyze();
-        self.css_weight = CriticalPathParser::new(
-            &build_directory,
-            self.to_stack(&html_parser.css_paths),
-            Regex::new(r#"@(import\s*?(url\()?)['"]([^'"]+)['"]"#).unwrap(),
-            3,
-        )
-        .analyze();
+        let (js_weight, css_weight) = self.traverse_resources(&build_directory, &html_parser);
+        self.javascript_weight = js_weight;
+        self.css_weight = css_weight;
     }
 
     pub fn total_weight(&self) -> usize {
@@ -142,5 +132,26 @@ impl CriticalResources {
             FileResolutionStrategy::Http(url) => FilePaths::fetch_resource(url),
             FileResolutionStrategy::Local(path) => FilePaths::read_resource(path),
         }
+    }
+
+    #[tokio::main]
+    async fn traverse_resources(
+        &self,
+        build_directory: &FileResolutionStrategy,
+        html_parser: &HTMLParser,
+    ) -> (usize, usize) {
+        let mut js_parser = CriticalPathParser::new(
+            build_directory,
+            self.to_stack(&html_parser.javascript_paths),
+            Regex::new(r#"import\s*?(?:.*?\s*from\s*?)?['"`](.*?)['"`]"#).unwrap(),
+            1,
+        );
+        let mut css_parser = CriticalPathParser::new(
+            build_directory,
+            self.to_stack(&html_parser.css_paths),
+            Regex::new(r#"@(import\s*?(url\()?)['"]([^'"]+)['"]"#).unwrap(),
+            3,
+        );
+        join!(js_parser.analyze(), css_parser.analyze())
     }
 }

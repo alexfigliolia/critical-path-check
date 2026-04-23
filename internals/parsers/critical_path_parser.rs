@@ -48,7 +48,6 @@ impl CriticalPathParser {
         }
     }
 
-    #[tokio::main]
     pub async fn analyze(&mut self) -> usize {
         let data = self.state.clone();
         let mut task_pool = JoinSet::<()>::new();
