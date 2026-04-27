@@ -5,6 +5,7 @@ mod argv;
 mod critical_path_check;
 mod logger;
 mod parsers;
+mod visitor;
 
 fn main() {
     let parser = Argv::new(

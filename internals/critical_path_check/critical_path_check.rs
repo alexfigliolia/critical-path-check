@@ -61,7 +61,7 @@ impl CriticalPathCheck {
     ///
     /// ```rust
     /// let my_path = PathBuf::from("/path/to/index.html");
-    /// let cp_check = CriticalPathCheck::from(&my_path);
+    /// let cp_check = CriticalPathCheck::from_path_buf(&my_path);
     /// ```
     pub fn from_path_buf(root_html: &PathBuf) -> Self {
         CriticalPathCheck {
@@ -127,11 +127,10 @@ impl CriticalPathCheck {
     ///
     /// ```rust
     /// let cp_check = CriticalPathCheck::new("/path/to/index.html");
-    /// let critical_path_size = cp_check.measure();
+    /// let critical_path_size: usize = cp_check.measure();
     /// ```
     pub fn measure(&self) -> usize {
-        let graph = self.run();
-        graph.analysis.total_weight()
+        self.run().analysis.total_weight()
     }
 
     /// ## run
@@ -142,11 +141,10 @@ impl CriticalPathCheck {
     ///
     /// ```rust
     /// let cp_check = CriticalPathCheck::new("/path/to/index.html");
-    /// let result = cp_check.run();
+    /// let result: CriticalPathAnalysis = cp_check.run();
     /// ```
     pub fn run(&self) -> CriticalPathAnalysis {
-        let mut analysis = CriticalResources::new(&self.root_html);
-        analysis.build();
+        let analysis = CriticalResources::new(&self.root_html);
         let unresolved_paths = FilePaths::unresolved_paths().clone();
         FilePaths::clear_unresolved_paths();
         CriticalPathAnalysis {
@@ -165,8 +163,7 @@ impl CriticalPathCheck {
     /// cp_check.run_cli();
     /// ```
     pub fn run_cli(&self) {
-        let mut analysis = CriticalResources::new(&self.root_html);
-        analysis.build();
+        let analysis = CriticalResources::new(&self.root_html);
         FilePaths::log_unresolved();
         analysis.log_stats();
         FilePaths::clear_unresolved_paths();
@@ -182,9 +179,7 @@ impl CriticalPathCheck {
     /// cp_check.as_json();
     /// ```
     pub fn as_json(&self) {
-        let mut analysis = CriticalResources::new(&self.root_html);
-        analysis.build();
-        println!("{}", analysis.to_json_str());
+        println!("{}", CriticalResources::new(&self.root_html).to_json_str());
     }
 
     fn to_resolver(root_html: &str) -> FileResolutionStrategy {
