@@ -1,92 +1,103 @@
 use regex::Regex;
-use std::{collections::HashMap, sync::LazyLock};
+use std::{
+    process::exit,
+    sync::{Arc, LazyLock},
+};
+use tokio::{join, task::JoinSet};
 
-use crate::parsers::file_paths::{FilePaths, FileResolutionStrategy};
+use crate::{
+    critical_path_check::critical_resources::CriticalResources,
+    logger::logger::Logger,
+    parsers::{
+        asset_parser::AssetParser,
+        critical_path_parser::CriticalPathParser,
+        file_paths::{FilePaths, FileResolutionStrategy},
+    },
+};
 
-static HTTP_FILE_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#".*\/([^?]*)"#).unwrap());
-static PRE_QUERY_PARAM_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"^(.*)\?"#).unwrap());
+static URL_PARENT_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"^(.*)\/"#).unwrap());
 
 pub struct HTMLParser {
-    pub file_paths: FilePaths,
     pub html_path: FileResolutionStrategy,
-    pub css_paths: HashMap<String, FileResolutionStrategy>,
-    pub javascript_paths: HashMap<String, FileResolutionStrategy>,
+    pub file_resolver: FilePaths,
+    pub html_content: String,
 }
 
 impl HTMLParser {
-    pub fn new(
-        root_html: &FileResolutionStrategy,
-        build_directory: &FileResolutionStrategy,
-    ) -> Self {
+    pub fn new(root_html: &FileResolutionStrategy) -> Self {
+        let html_content = HTMLParser::resolve_root(root_html);
+        let file_resolver = FilePaths::new(&HTMLParser::html_directory(root_html));
         HTMLParser {
-            css_paths: HashMap::new(),
-            javascript_paths: HashMap::new(),
-            file_paths: FilePaths::new(build_directory),
+            file_resolver,
             html_path: root_html.to_owned(),
+            html_content: html_content.to_owned(),
         }
     }
 
-    pub fn build(&mut self, content: &str) {
-        self.iterate_matches(
-            Regex::new(r#"<script.*?src=['"]([^'"]+)['"].*?>"#).unwrap(),
-            content,
-        );
-        self.iterate_matches(
-            Regex::new(r#"<link.*?rel=['"]stylesheet["'].*?href=['"]([^'"]+)['"].*?>"#).unwrap(),
-            content,
-        );
+    #[tokio::main]
+    pub async fn traverse_linked_resources(self) -> CriticalResources {
+        let arc = Arc::new(self);
+        let mut task_queue = JoinSet::new();
+        task_queue.spawn(arc.clone().create_css_parser());
+        task_queue.spawn(arc.clone().create_javascript_parser());
+        let [mut css_parser, mut js_parser] = task_queue.join_all().await.try_into().unwrap();
+        let (javascript_weight, css_weight) = join!(js_parser.analyze(), css_parser.analyze());
+        CriticalResources {
+            css_weight,
+            javascript_weight,
+            html_weight: arc.html_content.len(),
+        }
     }
 
-    fn iterate_matches(&mut self, regex: Regex, content: &str) {
-        let captures = regex.captures_iter(content);
-        for capture in captures {
-            if let Some(group) = capture.get(1) {
-                self.index_path(group.as_str());
+    async fn create_javascript_parser(self: Arc<Self>) -> CriticalPathParser {
+        CriticalPathParser::new(
+            &self.file_resolver.root_directory,
+            Regex::new(r#"(?:^|\W)import\s*(?:(?:(?:[a-zA-Z_$][\w$]*)|(?:\{[^{}]+\})|(?:\*\s+as\s+[a-zA-Z_$][\w$]*)|(?:[a-zA-Z_$][\w$]*\s*,\s*(?:\{[^{}]+\}|(?:\*\s+as\s+[a-zA-Z_$][\w$]*))))\s*from\s*)?['`"]([^'`"]+)['`"]"#).unwrap(),
+            AssetParser::create_script_parser(&self.html_path)
+                .parse_from(&self.html_content, &self.file_resolver)
+                .to_stack(),
+        )
+    }
+
+    async fn create_css_parser(self: Arc<Self>) -> CriticalPathParser {
+        CriticalPathParser::new(
+            &self.file_resolver.root_directory,
+            Regex::new(r#"(?:^|;|})@import\s*?(?:url\()?['`"]([^'`"]+)['`"](?:\))?"#).unwrap(),
+            AssetParser::create_link_parser(&self.html_path)
+                .parse_from(&self.html_content, &self.file_resolver)
+                .to_stack(),
+        )
+    }
+
+    fn html_directory(html_path: &FileResolutionStrategy) -> FileResolutionStrategy {
+        match html_path {
+            FileResolutionStrategy::Http(url) => {
+                if url.ends_with(".html")
+                    && let Some(result) = URL_PARENT_REGEX.captures(url)
+                    && let Some(first_match) = result.get(1)
+                {
+                    return FileResolutionStrategy::Http(first_match.as_str().to_string());
+                }
+                html_path.clone()
+            }
+            FileResolutionStrategy::Local(path) => {
+                if let Some(parent_dir) = path.parent() {
+                    return FileResolutionStrategy::Local(parent_dir.to_path_buf());
+                }
+                Logger::panic_with_error("I was unable to determine the HTML's directory");
+                exit(1);
             }
         }
     }
 
-    fn index_path(&mut self, path: &str) {
-        if let Some(resolver) = self.file_paths.resolve_file(path, &Vec::new()) {
-            match &resolver {
-                FileResolutionStrategy::Http(url) => {
-                    if let Some(file_name_match) = HTTP_FILE_REGEX.captures_iter(url).nth(0)
-                        && let Some(file_name) = file_name_match.get(1)
-                    {
-                        let mut file_name_cleaned = file_name.as_str();
-
-                        if let Some(file_without_query_params_match) = PRE_QUERY_PARAM_REGEX
-                            .captures_iter(file_name.as_str())
-                            .nth(0)
-                            && let Some(file_name_without_query_params) =
-                                file_without_query_params_match.get(1)
-                        {
-                            file_name_cleaned = file_name_without_query_params.as_str();
-                        }
-                        if file_name_cleaned.ends_with(".css")
-                            || file_name_cleaned.contains(".css.")
-                        {
-                            self.css_paths.insert(url.to_owned(), resolver);
-                        } else if file_name_cleaned.ends_with(".js")
-                            || file_name_cleaned.contains(".js.")
-                        {
-                            self.javascript_paths.insert(url.to_owned(), resolver);
-                        }
-                    } else {
-                        FilePaths::store_unresolved_path(&self.html_path, path);
-                    }
-                }
-                FileResolutionStrategy::Local(_) => {
-                    let hash = FilePaths::hash(&resolver);
-                    if path.ends_with(".css") {
-                        self.css_paths.insert(hash, resolver);
-                    } else if path.ends_with(".js") {
-                        self.javascript_paths.insert(hash, resolver);
-                    } else {
-                        FilePaths::store_unresolved_path(&self.html_path, path);
-                    }
-                }
-            }
+    fn resolve_root(html_path: &FileResolutionStrategy) -> String {
+        if let Some(content) = match html_path {
+            FileResolutionStrategy::Http(url) => FilePaths::fetch_resource(url),
+            FileResolutionStrategy::Local(path) => FilePaths::read_resource(path),
+        } {
+            return content;
         }
+        Logger::panic_with_error("Failed to parse the root HTML file");
+        exit(1);
     }
 }

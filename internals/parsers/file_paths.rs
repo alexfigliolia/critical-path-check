@@ -6,12 +6,13 @@ use std::{
 };
 
 use colored::Colorize;
+use fancy_regex::Regex as RegexWithLookAhead;
 use normalize_path::NormalizePath;
 use regex::Regex;
 
 use crate::logger::logger::Logger;
 
-#[derive(Clone)]
+#[derive(Hash, PartialEq, Eq, Debug, Clone)]
 pub enum FileResolutionStrategy {
     Http(String),
     Local(PathBuf),
@@ -31,11 +32,18 @@ static URL_PATH_REGEX: LazyLock<Regex> =
 static URL_PROTOCOL_AND_PATH_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"^(.*):\/\/(.*)"#).unwrap());
 
+pub static PRE_QUERY_PARAM_REGEX: LazyLock<RegexWithLookAhead> =
+    LazyLock::new(|| RegexWithLookAhead::new(r#"^(?:(.*)(?=\?)|.*)"#).unwrap());
+
 impl FilePaths {
     pub fn new(root_directory: &FileResolutionStrategy) -> Self {
         FilePaths {
             root_directory: root_directory.to_owned(),
         }
+    }
+
+    pub fn from_owned(root_directory: FileResolutionStrategy) -> Self {
+        FilePaths { root_directory }
     }
 
     pub fn unresolved_paths() -> MutexGuard<'static, HashMap<String, HashSet<String>>> {
@@ -52,6 +60,16 @@ impl FilePaths {
         bucket.insert(path.to_owned());
         let thing: HashSet<String> = bucket.clone();
         unresolved.insert(root_hash, thing);
+    }
+
+    pub fn before_query_params(path: &str) -> &str {
+        if let Ok(capture_result) = PRE_QUERY_PARAM_REGEX.captures(path)
+            && let Some(first_capture) = capture_result
+            && let Some(file_name_without_query_params) = first_capture.get(1)
+        {
+            return file_name_without_query_params.as_str();
+        }
+        path
     }
 
     pub fn clear_unresolved_paths() {
@@ -97,6 +115,7 @@ impl FilePaths {
                 if relative_path.starts_with("/") {
                     relative_path.remove(0);
                 }
+                relative_path = FilePaths::before_query_params(&relative_path).to_owned();
                 if !relative_path.is_empty() {
                     let mut roots = Vec::from_iter(additional_roots);
                     roots.insert(0, root_directory);

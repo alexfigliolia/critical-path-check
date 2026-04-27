@@ -5,6 +5,7 @@ use crate::critical_path_check::critical_path_check::{CriticalPathAnalysis, Crit
 pub mod critical_path_check;
 mod logger;
 pub mod parsers;
+mod visitor;
 
 /// Analyzes the target HTML file's critical render path
 ///
