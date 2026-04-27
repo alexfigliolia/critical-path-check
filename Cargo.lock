@@ -76,7 +76,7 @@ dependencies = [
 
 [[package]]
 name = "critical-path-check"
-version = "1.1.1"
+version = "1.1.2"
 dependencies = [
  "async-recursion",
  "colored",
