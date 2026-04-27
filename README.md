@@ -34,7 +34,7 @@ All methods exposed by the JavaScript API require a path to an HTML file. This p
 
 Returns a critical path analysis containing the byte-weight of your
 entrypoint modules including, HTML, CSS, and JavaScript. This method
-will also return an unresolvable paths encountered during the analysis
+will also return any unresolvable paths encountered during the analysis
 
 ```typescript
 import { analyzeCriticalPath } from "critical-path-check";
@@ -56,7 +56,7 @@ Returns the combined weight of critical HTML, CSS, and JavaScript in bytes
 ```typescript
 import { measureCriticalPath } from "critical-path-check";
 
-test("Critical CSS should never exceed N bytes", () => {
+test("The critical path should never exceed N bytes", () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
   expect(measureCriticalPath(buildPath)).toBeLessThan(204800);
 });
@@ -109,7 +109,7 @@ Returns true if the combined weight of critical JS does not exceed the input thr
 ```typescript
 import { assertCriticalJavaScript } from "critical-path-check";
 
-test("Critical CSS should never exceed N bytes", () => {
+test("Critical JavaScript should never exceed N bytes", () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
   expect(assertCriticalJavaScript(buildPath, 204800)).toEqual(true);
 });
@@ -138,7 +138,7 @@ println!("Total HTML Bytes: {}", result.analysis.html_weight);
 
 The underlying `struct` and `impl` powering the critical path check.
 
-There are two ways to spawn instances of the `CriticalPathCheck`
+There are three ways to spawn instances of the `CriticalPathCheck`
 
 ```rust
 use critical_path_check::critical_path_check::CriticalPathCheck;

@@ -9,7 +9,7 @@ import type { CriticalPathAnalysis } from "./types";
  *
  * Returns a critical path analysis containing the byte-weight of your
  * entrypoint modules including, HTML, CSS, and JavaScript. This method
- * will also return an unresolvable paths encountered during the analysis
+ * will also return any unresolvable paths encountered during the analysis
  *
  * ```typescript
  * import { analyzeCriticalPath } from "critical-path-check";
@@ -103,7 +103,7 @@ export async function assertCriticalCSS(path: string, bytes: number) {
  * ```typescript
  * import { assertCriticalJavaScript } from "critical-path-check";
  *
- * test("Critical CSS should never exceed N bytes", async () => {
+ * test("Critical JavaScript should never exceed N bytes", async () => {
  *   const buildPath = path.join(process.cwd(), "dist", "index.html");
  *   expect(await assertCriticalJavaScript(buildPath, 204800)).toEqual(true);
  * });
@@ -122,7 +122,7 @@ export async function assertCriticalJavaScript(path: string, bytes: number) {
  * ```typescript
  * import { measureCriticalPath } from "critical-path-check";
  *
- * test("Critical CSS should never exceed N bytes", async () => {
+ * test("The critical path should never exceed N bytes", async () => {
  *   const buildPath = path.join(process.cwd(), "dist", "index.html");
  *   expect(await measureCriticalPath(buildPath)).toBeLessThan(204800);
  * });
