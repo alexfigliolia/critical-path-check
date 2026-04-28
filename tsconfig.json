@@ -1,14 +1,10 @@
 {
+  "extends": "@tsconfig/node20/tsconfig.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "strict": true,
-    "moduleResolution": "node",
-    "module": "CommonJS",
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "module": "nodenext",
+    "declaration": true,
+    "types": ["node"],
+    "esModuleInterop": true
   },
-  "include": ["."],
-  "exclude": ["node_modules", "benchmark", "__test__"]
+  "exclude": ["dist", "node_modules", "target", "fixtures"]
 }

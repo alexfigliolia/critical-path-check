@@ -1,22 +1,22 @@
 name: CI
 env:
   DEBUG: napi:*
-  APP_NAME: package-template
-  MACOSX_DEPLOYMENT_TARGET: '10.13'
-  CARGO_INCREMENTAL: '1'
+  APP_NAME: critical-path
+  MACOSX_DEPLOYMENT_TARGET: "10.13"
+  CARGO_INCREMENTAL: "1"
 permissions:
   contents: write
   id-token: write
-'on':
+"on":
   push:
     branches:
       - main
     tags-ignore:
-      - '**'
+      - "**"
     paths-ignore:
-      - '**/*.md'
+      - "**/*.md"
       - LICENSE
-      - '**/*.gitignore'
+      - "**/*.gitignore"
       - .editorconfig
       - docs/**
   pull_request: null
@@ -35,25 +35,19 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22
-          cache: 'pnpm'
-
+          cache: pnpm
       - name: Install
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
-
       - name: Install dependencies
         run: pnpm install
-
       - name: ESLint
         run: pnpm lint
-
       - name: Cargo fmt
         run: cargo fmt -- --check
-
       - name: Clippy
         run: cargo clippy
-
   build:
     strategy:
       fail-fast: false
@@ -157,15 +151,14 @@ jobs:
         if: matrix.settings.target != 'wasm32-wasip1-threads'
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: '*.node'
+          path: "*.node"
           if-no-files-found: error
-
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         if: matrix.settings.target == 'wasm32-wasip1-threads'
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: '*.wasm'
+          path: "*.wasm"
           if-no-files-found: error
   build-freebsd:
     runs-on: ubuntu-latest
@@ -180,10 +173,10 @@ jobs:
           RUSTUP_IO_THREADS: 1
         with:
           operating_system: freebsd
-          version: '15.0'
+          version: "15.0"
           memory: 8G
           cpu_count: 3
-          environment_variables: 'DEBUG RUSTUP_IO_THREADS'
+          environment_variables: DEBUG RUSTUP_IO_THREADS
           shell: bash
           run: |
             sudo pkg install -y -f curl node libnghttp2 npm
@@ -231,7 +224,7 @@ jobs:
             target: aarch64-apple-darwin
             architecture: arm64
         node:
-          - '22'
+          - "22"
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v6
@@ -269,7 +262,7 @@ jobs:
           - aarch64-unknown-linux-musl
           - armv7-unknown-linux-gnueabihf
         node:
-          - '22'
+          - "22"
     runs-on: ${{ contains(matrix.target, 'aarch64') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v6
@@ -300,7 +293,6 @@ jobs:
             }
           " >> $GITHUB_OUTPUT
           echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-      # use --force to download the all platform/arch dependencies
       - name: Install dependencies
         run: pnpm install --force
       - name: Download artifacts
@@ -323,7 +315,7 @@ jobs:
         with:
           image: ${{ steps.docker.outputs.IMAGE }}
           name: test-binding
-          options: -v ${{ steps.docker.outputs.PNPM_STORE_PATH }}:${{ steps.docker.outputs.PNPM_STORE_PATH }} -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} --platform ${{ steps.docker.outputs.PLATFORM }}
+          options: "-v ${{ steps.docker.outputs.PNPM_STORE_PATH }}:${{ steps.docker.outputs.PNPM_STORE_PATH }} -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} --platform ${{ steps.docker.outputs.PLATFORM }}"
           args: npm run test
   test-wasi:
     name: Test WASI target

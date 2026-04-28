@@ -1,87 +1,237 @@
-# `@napi-rs/package-template`
+# Critical Path Check
 
-![https://github.com/napi-rs/package-template/actions](https://github.com/napi-rs/package-template/workflows/CI/badge.svg)
+A rust powered tool for making assertions on a web application's critical path
 
-> Template project for writing node packages with napi-rs.
+1. [Installation](#installation)
+2. [Rust API](#rust-api)
+3. [JavaScript API](#javascript-api)
+4. [Command Line](#command-line)
 
-# Usage
+## Installation
 
-1. Click **Use this template**.
-2. **Clone** your project.
-3. Run `pnpm install` to install dependencies.
-4. Run `pnpm napi rename -n [@your-scope/package-name] -b [binary-name]` command under the project folder to rename your package.
-
-## Install this test package
+#### JavaScript/TypeScript
 
 ```bash
-pnpm add @napi-rs/package-template
+npm i -D @ui-perf/critical-path
+yarn add -D @ui-perf/critical-path
+pnpm add -D @ui-perf/critical-path
 ```
 
-## Usage
-
-### Build
-
-After `pnpm build` command, you can see `package-template.[darwin|win32|linux].node` file in project root. This is the native addon built from [lib.rs](./src/lib.rs).
-
-### Test
-
-With [ava](https://github.com/avajs/ava), run `pnpm test` to testing native addon. You can also switch to another testing framework if you want.
-
-### CI
-
-With GitHub Actions, each commit and pull request will be built and tested automatically in [`node@18`, `node@20`] x [`macOS`, `Linux`, `Windows`] matrix. You will never be afraid of the native addon broken in these platforms.
-
-### Release
-
-Release native package is very difficult in old days. Native packages may ask developers who use it to install `build toolchain` like `gcc/llvm`, `node-gyp` or something more.
-
-With `GitHub actions`, we can easily prebuild a `binary` for major platforms. And with `N-API`, we should never be afraid of **ABI Compatible**.
-
-The other problem is how to deliver prebuild `binary` to users. Downloading it in `postinstall` script is a common way that most packages do it right now. The problem with this solution is it introduced many other packages to download binary that has not been used by `runtime codes`. The other problem is some users may not easily download the binary from `GitHub/CDN` if they are behind a private network (But in most cases, they have a private NPM mirror).
-
-In this package, we choose a better way to solve this problem. We release different `npm packages` for different platforms. And add it to `optionalDependencies` before releasing the `Major` package to npm.
-
-`NPM` will choose which native package should download from `registry` automatically. You can see [npm](./npm) dir for details. And you can also run `pnpm add @napi-rs/package-template` to see how it works.
-
-## Develop requirements
-
-- Install the latest `Rust`
-- Install `Node.js@16+` which fully supported `Node-API`
-- Run `corepack enable`
-
-## Test in local
-
-- pnpm
-- pnpm build
-- pnpm test
-
-And you will see:
+#### Rust
 
 ```bash
-$ ava --verbose
-
-  ✔ sync function from native code
-  ✔ sleep function from native code (201ms)
-  ─
-
-  2 tests passed
-✨  Done in 1.12s.
+cargo add critical_path_check
 ```
 
-## Release package
+### JavaScript API
 
-Ensure you have set your **NPM_TOKEN** in the `GitHub` project setting.
+All methods exposed by the JavaScript API require a path to an HTML file. This path can be
 
-In `Settings -> Secrets`, add **NPM_TOKEN** into it.
+1. An absolute path to an HTML file locally on your machine
+2. The URL of a remote HTML file - ie - `https://github.com`
 
-When you want to release the package:
+#### `analyzeCriticalPath`
+
+Returns a critical path analysis containing the byte-weight of your
+entrypoint modules including, HTML, CSS, and JavaScript. This method
+will also return any unresolvable paths encountered during the analysis
+
+```typescript
+import { analyzeCriticalPath } from "@ui-perf/critical-path";
+
+test("Critical Path should never exceed N bytes", () => {
+  const buildPath = path.join(process.cwd(), "dist", "index.html");
+  const { htmlWeight, cssWeight, javascriptWeight } =
+    analyzeCriticalPath(buildPath);
+  expect(htmlWeight).toBeLessThan(51200);
+  expect(cssWeight).toBeLessThan(102400);
+  expect(javascriptWeight).toBeLessThan(204800);
+});
+```
+
+#### `measureCriticalPath`
+
+Returns the combined weight of critical HTML, CSS, and JavaScript in bytes
+
+```typescript
+import { measureCriticalPath } from "@ui-perf/critical-path";
+
+test("The critical path should never exceed N bytes", () => {
+  const buildPath = path.join(process.cwd(), "dist", "index.html");
+  expect(measureCriticalPath(buildPath)).toBeLessThan(204800);
+});
+```
+
+#### `assertCriticalPath`
+
+Returns true if the combined weight of critical HTML, CSS, and JS
+does not exceed the input threshold bytes.
+
+```typescript
+import { assertCriticalPath } from "@ui-perf/critical-path";
+
+test("Critical Path should never exceed N bytes", () => {
+  const buildPath = path.join(process.cwd(), "dist", "index.html");
+  expect(assertCriticalPath(buildPath, 204800)).toEqual(true);
+});
+```
+
+#### `assertCriticalHTML`
+
+Returns true if the weight of critical HTML does not exceed the input threshold bytes.
+
+```typescript
+import { assertCriticalHTML } from "@ui-perf/critical-path";
+
+test("Critical HTML should never exceed N bytes", () => {
+  const buildPath = path.join(process.cwd(), "dist", "index.html");
+  expect(assertCriticalHTML(buildPath, 51200)).toEqual(true);
+});
+```
+
+#### `assertCriticalCSS`
+
+Returns true if the weight of critical CSS does not exceed the input threshold bytes.
+
+```typescript
+import { assertCriticalCSS } from "@ui-perf/critical-path";
+
+test("Critical CSS should never exceed N bytes", () => {
+  const buildPath = path.join(process.cwd(), "dist", "index.html");
+  expect(assertCriticalCSS(buildPath, 102400)).toEqual(true);
+});
+```
+
+#### `assertCriticalJavaScript`
+
+Returns true if the combined weight of critical JS does not exceed the input threshold bytes.
+
+```typescript
+import { assertCriticalJavaScript } from "@ui-perf/critical-path";
+
+test("Critical JavaScript should never exceed N bytes", () => {
+  const buildPath = path.join(process.cwd(), "dist", "index.html");
+  expect(assertCriticalJavaScript(buildPath, 204800)).toEqual(true);
+});
+```
+
+### Rust API
+
+#### `analyze_critical_path`
+
+Analyzes the target HTML file's critical render path
+
+Returns the critical weight (in bytes) required to render your page. It also returns any unresolvable paths that were encountered during the analysis
+
+```rust
+use critical_path_check::analyze_critical_path;
+
+let my_html = PathBuf::from("/path/to/my/root.html");
+let result = analyze_critical_path(&my_html);
+
+println!("Total JS Bytes: {}", result.analysis.javascript_weight);
+println!("Total CSS Bytes: {}", result.analysis.css_weight);
+println!("Total HTML Bytes: {}", result.analysis.html_weight);
+```
+
+#### `CriticalPathCheck`
+
+The underlying `struct` and `impl` powering the critical path check.
+
+There are three ways to spawn instances of the `CriticalPathCheck`
+
+```rust
+use critical_path_check::critical_path_check::CriticalPathCheck;
+
+/// using a string representing an absolute path to an HTML file
+let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
+/// or using a URL to a remotely hosted build
+let cp_check = CriticalPathCheck::new("https://my-app.com");
+/// or using a PathBuf
+let cp_check = CriticalPathCheck::from(PathBuf::from("/path/to/my/root.html"));
+```
+
+#### `CriticalPathCheck.run(&self): CriticalPathAnalysis`
+
+Returns a critical path analysis containing the byte-weights of critical HTML, CSS, and JavaScript as well as any unresolvable imports/references encountered
+
+```rust
+use critical_path_check::critical_path_check::CriticalPathCheck;
+
+let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
+let result = cp_check.run();
+```
+
+#### `CriticalPathCheck.measure(&self): usize`
+
+Returns the combined weight of critical HTML, CSS, and JavaScript
+
+```rust
+use critical_path_check::critical_path_check::CriticalPathCheck;
+
+let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
+let total_bytes = cp_check.measure();
+```
+
+#### `CriticalPathCheck.assert(&self, bytes: usize): bool`
+
+Returns true if the specified number of bytes is greater than the cummulative critical path
+
+```rust
+use critical_path_check::critical_path_check::CriticalPathCheck;
+
+let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
+let check_passed = cp_check.assert(1000000);
+```
+
+#### `CriticalPathCheck.assert_html(&self, bytes: usize): bool`
+
+Returns true if the specified number of bytes is greater than the byte-weight of the critical HTML
+
+```rust
+use critical_path_check::critical_path_check::CriticalPathCheck;
+
+let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
+let check_passed = cp_check.assert_html(50000);
+```
+
+#### `CriticalPathCheck.assert_css(&self, bytes: usize): bool`
+
+Returns true if the specified number of bytes is greater than the byte-weight of the critical CSS
+
+```rust
+use critical_path_check::critical_path_check::CriticalPathCheck;
+
+let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
+let check_passed = cp_check.assert_css(100000);
+```
+
+#### `CriticalPathCheck.assert_javascript(&self, bytes: usize): bool`
+
+Returns true if the specified number of bytes is greater than the byte-weight of the critical JavaScript
+
+```rust
+use critical_path_check::critical_path_check::CriticalPathCheck;
+
+let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
+let check_passed = cp_check.assert_javascript(500000);
+```
+
+#### `CriticalPathCheck.run_cli(&self)`
+
+Executes the critical path analysis as a CLI command logging all results to `stdout`
+
+```rust
+use critical_path_check::critical_path_check::CriticalPathCheck;
+
+let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
+cp_check.run_cli();
+```
+
+### Command Line
+
+The critical path check can be used as a CLI simply by installing the crate and running
 
 ```bash
-npm version [<newversion> | major | minor | patch | premajor | preminor | prepatch | prerelease [--preid=<prerelease-id>] | from-git]
-
-git push
+critical-path-check /absolute/path/or/url/to/your-app.html
 ```
-
-GitHub actions will do the rest job for you.
-
-> WARN: Don't run `npm publish` manually.
