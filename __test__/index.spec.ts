@@ -75,7 +75,7 @@ test("test measure", t => {
   ],
   [
     "https://not-an-actual-domain@#($&(*#@$.com",
-    "CP Check: Failed to parse the root HTML file"
+    "CP Check: Failed to parse the root HTML file",
   ],
 ].forEach(([path, message]) => {
   test(`test throwing stderr - ${message}`, t => {

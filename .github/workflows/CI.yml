@@ -42,12 +42,10 @@ jobs:
           components: clippy, rustfmt
       - name: Install dependencies
         run: pnpm install
-      - name: ESLint
-        run: pnpm lint
-      - name: Cargo fmt
-        run: cargo fmt -- --check
-      - name: Clippy
-        run: cargo clippy
+      - name: Lint Typescript
+        run: pnpm lint:ts
+      - name: Lint Rust
+        run: pnpm lint:rust:ci
   build:
     strategy:
       fail-fast: false
@@ -247,7 +245,7 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: pnpm test
+        run: pnpm test:ci
   test-linux-binding:
     name: Test ${{ matrix.target }} - node@${{ matrix.node }}
     needs:
@@ -316,7 +314,7 @@ jobs:
           image: ${{ steps.docker.outputs.IMAGE }}
           name: test-binding
           options: "-v ${{ steps.docker.outputs.PNPM_STORE_PATH }}:${{ steps.docker.outputs.PNPM_STORE_PATH }} -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} --platform ${{ steps.docker.outputs.PLATFORM }}"
-          args: npm run test
+          args: npm run test:ci
   test-wasi:
     name: Test WASI target
     needs:
@@ -342,7 +340,7 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: pnpm test
+        run: pnpm test:ci
         env:
           NAPI_RS_FORCE_WASI: 1
   publish:
