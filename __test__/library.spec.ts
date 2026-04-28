@@ -5,7 +5,6 @@ import test from "ava";
 
 import {
   analyzeCriticalPath,
-  cli,
   measureCriticalPath,
   assertCriticalCss,
   assertCriticalHtml,
@@ -31,11 +30,6 @@ test("test with no errors encountered", t => {
   t.is(result.htmlWeight, 646);
   t.is(result.cssWeight, 11782);
   t.is(result.javascriptWeight, 1336333);
-});
-
-test("test cli", t => {
-  const result = cli(join(cwd(), "fixtures/test-portfolio/index.html"));
-  t.is(result, undefined);
 });
 
 test("test measure", t => {

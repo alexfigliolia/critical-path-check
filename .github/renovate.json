@@ -14,7 +14,13 @@
       "groupName": "napi-rs"
     },
     {
-      "matchPackagePatterns": ["^eslint", "^@typescript-eslint"],
+      "matchPackagePatterns": [
+        "^oxlint",
+        "^oxfmt",
+        "^oxlint-tsgolint",
+        "^husky",
+        "^lint-staged"
+      ],
       "groupName": "linter"
     }
   ],
