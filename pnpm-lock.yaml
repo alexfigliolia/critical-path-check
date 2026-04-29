@@ -23,9 +23,6 @@ importers:
       '@napi-rs/cli':
         specifier: ^3.2.0
         version: 3.2.0(@emnapi/runtime@1.5.0)(@types/node@25.6.0)(emnapi@1.5.0)
-      '@napi-rs/wasm-runtime':
-        specifier: ^1.0.4
-        version: 1.0.4
       '@oxc-node/core':
         specifier: ^0.1.0
         version: 0.1.0
@@ -35,9 +32,6 @@ importers:
       '@tsconfig/node20':
         specifier: ^20.1.9
         version: 20.1.9
-      '@tybys/wasm-util':
-        specifier: ^0.10.0
-        version: 0.10.0
       '@types/node':
         specifier: ^25.6.0
         version: 25.6.0
@@ -663,9 +657,6 @@ packages:
     resolution: {integrity: sha512-7cmzIu+Vbupriudo7UudoMRH2OA3cTw67vva8MxeoAe5S7vPFI7z0vp0pMXiA25S8IUJefImQ90FeJjl8fjEaQ==}
     engines: {node: '>= 10'}
 
-  '@napi-rs/wasm-runtime@1.0.4':
-    resolution: {integrity: sha512-+ZEtJPp8EF8h4kN6rLQECRor00H7jtDgBVtttIUoxuDkXLiQMaSBqju3LV/IEsMvqVG5pviUvR4jYhIA1xNm8w==}
-
   '@napi-rs/wasm-runtime@1.0.7':
     resolution: {integrity: sha512-SeDnOO0Tk7Okiq6DbXmmBODgOAb9dp9gjlphokTUxmt8U3liIP1ZsozBahH69j/RJv+Rfs6IwUKHTgQYJ/HBAw==}
 
@@ -1137,9 +1128,6 @@ packages:
 
   '@tsconfig/node20@20.1.9':
     resolution: {integrity: sha512-IjlTv1RsvnPtUcjTqtVsZExKVq+KQx4g5pCP5tI7rAs6Xesl2qFwSz/tPDBC4JajkL/MlezBu3gPUwqRHl+RIg==}
-
-  '@tybys/wasm-util@0.10.0':
-    resolution: {integrity: sha512-VyyPYFlOMNylG45GoAe0xDoLwWuowvf92F9kySqzYh8vmYm7D2u4iUJKa1tOUpS70Ku13ASrOkS4ScXFsTaCNQ==}
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -2509,12 +2497,6 @@ snapshots:
       '@napi-rs/tar-win32-ia32-msvc': 1.1.0
       '@napi-rs/tar-win32-x64-msvc': 1.1.0
 
-  '@napi-rs/wasm-runtime@1.0.4':
-    dependencies:
-      '@emnapi/core': 1.5.0
-      '@emnapi/runtime': 1.5.0
-      '@tybys/wasm-util': 0.10.0
-
   '@napi-rs/wasm-runtime@1.0.7':
     dependencies:
       '@emnapi/core': 1.5.0
@@ -2850,10 +2832,6 @@ snapshots:
   '@taplo/cli@0.7.0': {}
 
   '@tsconfig/node20@20.1.9': {}
-
-  '@tybys/wasm-util@0.10.0':
-    dependencies:
-      tslib: 2.6.3
 
   '@tybys/wasm-util@0.10.1':
     dependencies:

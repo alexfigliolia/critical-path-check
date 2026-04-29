@@ -56,11 +56,9 @@
     "@figliolia/child-process": "^1.0.4",
     "@figliolia/semver": "^1.0.0",
     "@napi-rs/cli": "^3.2.0",
-    "@napi-rs/wasm-runtime": "^1.0.4",
     "@oxc-node/core": "^0.1.0",
     "@taplo/cli": "^0.7.0",
     "@tsconfig/node20": "^20.1.9",
-    "@tybys/wasm-util": "^0.10.0",
     "@types/node": "^25.6.0",
     "ava": "^8.0.0",
     "emnapi": "^1.5.0",
@@ -99,8 +97,7 @@
       "x86_64-unknown-freebsd",
       "aarch64-unknown-linux-musl",
       "aarch64-pc-windows-msvc",
-      "armv7-linux-androideabi",
-      "wasm32-wasi-preview1-threads"
+      "armv7-linux-androideabi"
     ]
   },
   "ava": {

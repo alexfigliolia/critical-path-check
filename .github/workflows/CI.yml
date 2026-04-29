@@ -87,9 +87,6 @@ jobs:
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             build: pnpm build --target aarch64-pc-windows-msvc
-          - host: ubuntu-latest
-            target: wasm32-wasip1-threads
-            build: pnpm build --target wasm32-wasip1-threads
     name: stable - ${{ matrix.settings.target }} - node@22
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -146,17 +143,9 @@ jobs:
         shell: bash
       - name: Upload artifact
         uses: actions/upload-artifact@v7
-        if: matrix.settings.target != 'wasm32-wasip1-threads'
         with:
           name: bindings-${{ matrix.settings.target }}
           path: "dist/*.node"
-          if-no-files-found: error
-      - name: Upload artifact
-        uses: actions/upload-artifact@v7
-        if: matrix.settings.target == 'wasm32-wasip1-threads'
-        with:
-          name: bindings-${{ matrix.settings.target }}
-          path: "*.wasm"
           if-no-files-found: error
   build-freebsd:
     runs-on: ubuntu-latest
@@ -315,34 +304,6 @@ jobs:
           name: test-binding
           options: "-v ${{ steps.docker.outputs.PNPM_STORE_PATH }}:${{ steps.docker.outputs.PNPM_STORE_PATH }} -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} --platform ${{ steps.docker.outputs.PLATFORM }}"
           args: npm run test:ci
-  test-wasi:
-    name: Test WASI target
-    needs:
-      - build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - name: setup pnpm
-        uses: pnpm/action-setup@v6
-      - name: Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: pnpm
-      - name: Install dependencies
-        run: pnpm install
-      - name: Download artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: bindings-wasm32-wasip1-threads
-          path: .
-      - name: List packages
-        run: ls -R .
-        shell: bash
-      - name: Test bindings
-        run: pnpm test:ci
-        env:
-          NAPI_RS_FORCE_WASI: 1
   publish:
     name: Publish
     runs-on: ubuntu-latest
@@ -351,7 +312,6 @@ jobs:
       - build-freebsd
       - test-macOS-windows-binding
       - test-linux-binding
-      - test-wasi
     steps:
       - uses: actions/checkout@v6
       - name: setup pnpm
