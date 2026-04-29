@@ -145,7 +145,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: "dist/*.node"
+          path: dist
           if-no-files-found: error
   build-freebsd:
     runs-on: ubuntu-latest
@@ -191,7 +191,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: bindings-freebsd
-          path: dist/${{ env.APP_NAME }}.*.node
+          path: dist
           if-no-files-found: error
   test-macOS-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
@@ -229,7 +229,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: .
+          path: dist
       - name: List packages
         run: ls -R .
         shell: bash
@@ -286,7 +286,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: bindings-${{ matrix.target }}
-          path: .
+          path: dist
       - name: List packages
         run: ls -R .
         shell: bash
