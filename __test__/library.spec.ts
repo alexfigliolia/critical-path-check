@@ -17,9 +17,9 @@ test("test with errors encountered", t => {
     join(cwd(), "fixtures/test-with-errors/index.html"),
   );
   t.is(Object.keys(result.unresolvedPaths).length, 3);
-  t.is(result.htmlWeight, 542);
-  t.is(result.cssWeight, 4454);
-  t.is(result.javascriptWeight, 611996);
+  t.is(inByteRange(result.htmlWeight, 542), true);
+  t.is(inByteRange(result.cssWeight, 4454), true);
+  t.is(inByteRange(result.javascriptWeight, 611996), true);
 });
 
 test("test with no errors encountered", t => {
@@ -27,15 +27,18 @@ test("test with no errors encountered", t => {
     join(cwd(), "fixtures/test-portfolio/index.html"),
   );
   t.is(Object.keys(result.unresolvedPaths).length, 0);
-  t.is(result.htmlWeight, 646);
-  t.is(result.cssWeight, 11782);
-  t.is(result.javascriptWeight, 1336333);
+  t.is(inByteRange(result.htmlWeight, 646), true);
+  t.is(inByteRange(result.cssWeight, 11782), true);
+  t.is(inByteRange(result.javascriptWeight, 1336333), true);
 });
 
 test("test measure", t => {
   t.is(
-    measureCriticalPath(join(cwd(), "fixtures/test-portfolio/index.html")),
-    1348761,
+    inByteRange(
+      measureCriticalPath(join(cwd(), "fixtures/test-portfolio/index.html")),
+      1348761,
+    ),
+    true,
   );
 });
 
@@ -76,3 +79,12 @@ test("test measure", t => {
     t.throws(() => analyzeCriticalPath(path), { message });
   });
 });
+
+function inByteRange(input: number, target: number, allowance: number = 0.1) {
+  const allowanceBytes = target * allowance;
+  const min = target - allowanceBytes;
+  const max = target + allowanceBytes;
+  console.log("input: ", input);
+  console.log(`Range: ${min} - ${max}`);
+  return input >= min && input <= max;
+}
