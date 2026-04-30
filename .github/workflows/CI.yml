@@ -141,12 +141,19 @@ jobs:
       - name: Build
         run: ${{ matrix.settings.build }}
         shell: bash
-      - name: Upload artifact
+      - name: Upload Binary
         uses: actions/upload-artifact@v7
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: dist
+          path: dist/*.node
           if-no-files-found: error
+      - name: Upload JavaScript
+        uses: actions/upload-artifact@v7
+        with:
+          name: built-javascript
+          path: dist/index.*
+          if-no-files-found: error
+          overwrite: true
   build-freebsd:
     runs-on: ubuntu-latest
     name: Build FreeBSD
@@ -187,12 +194,19 @@ jobs:
             pnpm build
             rm -rf node_modules
             rm -rf target
-      - name: Upload artifact
+      - name: Upload Binary
         uses: actions/upload-artifact@v7
         with:
           name: bindings-freebsd
-          path: dist
+          path: dist/*.node
           if-no-files-found: error
+      - name: Upload JavaScript
+        uses: actions/upload-artifact@v7
+        with:
+          name: built-javascript
+          path: dist/index.*
+          if-no-files-found: error
+          overwrite: true
   test-macOS-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
     needs:
@@ -225,10 +239,15 @@ jobs:
           architecture: ${{ matrix.settings.architecture }}
       - name: Install dependencies
         run: pnpm install
-      - name: Download artifacts
+      - name: Download Binary
         uses: actions/download-artifact@v8
         with:
           name: bindings-${{ matrix.settings.target }}
+          path: dist
+      - name: Download JavaScript
+        uses: actions/download-artifact@v8
+        with:
+          name: built-javascript
           path: dist
       - name: List packages
         run: ls -R .
@@ -287,6 +306,11 @@ jobs:
         with:
           name: bindings-${{ matrix.target }}
           path: dist
+      - name: Download JavaScript
+        uses: actions/download-artifact@v8
+        with:
+          name: built-javascript
+          path: dist
       - name: List packages
         run: ls -R .
         shell: bash
@@ -321,18 +345,25 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
       - name: Install dependencies
         run: pnpm install
-      - name: Download all artifacts
+      - name: Download Binary Packages
         uses: actions/download-artifact@v8
         with:
           path: artifacts
+      - name: Download Javascript
+        uses: actions/download-artifact@v8
+        with:
+          path: dist
+          name: built-javascript
       - name: create npm dirs
         run: pnpm napi create-npm-dirs
       - name: Move artifacts
         run: pnpm artifacts
       - name: List packages
-        run: ls -R ./npm
+        run: ls -R ./
         shell: bash
       - name: Publish
         run: |
@@ -341,10 +372,12 @@ jobs:
           then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             npm publish --access public
+            cargo publish --package critical-path-check --token ${ { secrets.CARGO_REGISTRY_TOKEN } }
           elif git log -1 --pretty=%B | grep "^v\?[0-9]\+\.[0-9]\+\.[0-9]\+";
           then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             npm publish --tag next --access public
+            cargo publish --package critical-path-check --token ${ { secrets.CARGO_REGISTRY_TOKEN } }
           else
             echo "Not a release, skipping publish"
           fi

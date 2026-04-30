@@ -56,9 +56,6 @@ importers:
       oxlint-tsgolint:
         specifier: ^0.22.1
         version: 0.22.1
-      tinybench:
-        specifier: ^6.0.0
-        version: 6.0.0
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -1937,10 +1934,6 @@ packages:
     resolution: {integrity: sha512-TIsDdtKo6+XrPtiTm1ssmMngN1sAhyKnTO2kunQWqNPWIVvCm15Wmw4SWInwTVgJ5u/Tr04+8Ei9TNcw4x4ONA==}
     engines: {node: '>=4'}
 
-  tinybench@6.0.0:
-    resolution: {integrity: sha512-BWlWpVbbZXaYjRV0twGLNQO00Zj4HA/sjLOQP2IvzQqGwRGp+2kh7UU3ijyJ3ywFRogYDRbiHDMrUOfaMnN56g==}
-    engines: {node: '>=20.0.0'}
-
   tinypool@2.1.0:
     resolution: {integrity: sha512-Pugqs6M0m7Lv1I7FtxN4aoyToKg1C4tu+/381vH35y8oENM/Ai7f7C4StcoK4/+BSw9ebcS8jRiVrORFKCALLw==}
     engines: {node: ^20.0.0 || >=22.0.0}
@@ -3620,8 +3613,6 @@ snapshots:
   temp-dir@3.0.0: {}
 
   time-zone@1.0.0: {}
-
-  tinybench@6.0.0: {}
 
   tinypool@2.1.0: {}
 

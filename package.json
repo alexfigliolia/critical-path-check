@@ -1,6 +1,6 @@
 {
   "name": "@ui-perf/critical-path",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "A critical path assertion library powered by rust",
   "keywords": [
     "ci",
@@ -20,17 +20,18 @@
     "url": "git+https://github.com/alexfigliolia/critical-path-check.git"
   },
   "files": [
-    "dist"
+    "index.*"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "artifacts": "napi artifacts",
-    "bench": "node --import @oxc-node/core/register benchmark/bench.ts",
+    "artifacts": "pnpm artifacts:js && pnpm artifacts:native",
+    "artifacts:js": "for f in dist/index*; do mv -f $f ${f##*/}; done",
+    "artifacts:native": "napi artifacts",
     "build": "pnpm build:debug --release",
     "build:cli": "pnpm build:rust && pnpm install:rust",
     "build:debug": "cargo clean && rm -rf dist && napi build --platform -o dist --package bindings",
@@ -67,7 +68,6 @@
     "oxfmt": "^0.47.0",
     "oxlint": "^1.14.0",
     "oxlint-tsgolint": "^0.22.1",
-    "tinybench": "^6.0.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.0"
   },

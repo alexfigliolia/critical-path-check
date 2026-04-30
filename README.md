@@ -21,6 +21,8 @@ pnpm add -D @ui-perf/critical-path
 
 ```bash
 cargo add critical_path_check
+# or
+cargo install critical_path_check
 ```
 
 ### JavaScript API
@@ -233,5 +235,6 @@ cp_check.run_cli();
 The critical path check can be used as a CLI simply by installing the crate and running
 
 ```bash
+# cargo install critical-path-check
 critical-path-check /absolute/path/or/url/to/your-app.html
 ```
