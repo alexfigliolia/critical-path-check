@@ -3,8 +3,8 @@
 A rust powered tool for making assertions on a web application's critical path
 
 1. [Installation](#installation)
-2. [Rust API](#rust-api)
-3. [JavaScript API](#javascript-api)
+2. [JavaScript API](#javascript-api)
+3. [Rust API](#rust-api)
 4. [Command Line](#command-line)
 
 ## Installation
