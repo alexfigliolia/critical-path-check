@@ -372,12 +372,12 @@ jobs:
           then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             npm publish --access public
-            cargo publish --package critical-path-check --token ${ { secrets.CARGO_REGISTRY_TOKEN } }
+            cargo publish --package critical-path-check --token $CARGO_REGISTRY_TOKEN
           elif git log -1 --pretty=%B | grep "^v\?[0-9]\+\.[0-9]\+\.[0-9]\+";
           then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             npm publish --tag next --access public
-            cargo publish --package critical-path-check --token ${ { secrets.CARGO_REGISTRY_TOKEN } }
+            cargo publish --package critical-path-check --token $CARGO_REGISTRY_TOKEN
           else
             echo "Not a release, skipping publish"
           fi
@@ -385,3 +385,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
