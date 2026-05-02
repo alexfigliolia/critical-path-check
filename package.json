@@ -1,6 +1,6 @@
 {
   "name": "@ui-perf/critical-path",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "description": "A critical path assertion library powered by rust",
   "keywords": [
     "ci",
@@ -37,7 +37,6 @@
     "build:debug": "cargo clean && rm -rf dist && napi build --platform -o dist --package bindings",
     "build:rust": "cargo build --release --package critical-path-check",
     "build:rust:dev": "cargo build --package critical-path-check",
-    "bump:version": "tsx ./release/run.ts",
     "format:toml": "taplo lint && taplo format",
     "install:rust": "cargo install --path .",
     "lint:all": "pnpm lint:rust && pnpm lint:ts",
@@ -46,6 +45,7 @@
     "lint:ts": "pnpm oxlint --type-aware --report-unused-disable-directives --fix && pnpm oxfmt",
     "prepare": "husky",
     "prepublishOnly": "napi prepublish -t npm",
+    "release": "tsx ./release/run.ts",
     "run:dev": "cargo run --package critical-path-check --bin critical-path-check",
     "test": "pnpm build && ava",
     "test:ci": "ava",

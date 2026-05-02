@@ -33,8 +33,8 @@ pub fn analyzeCriticalPath(html_path: String) -> Result<CriticalPathAnalysis, Er
 }
 
 #[napi]
-pub fn cli(html_path: String) {
-    CriticalPathCheck::new(&html_path).run_cli();
+pub fn cli(html_path: String, as_json: Option<bool>) {
+    CriticalPathCheck::new(&html_path).run_cli(as_json);
 }
 
 #[napi]

@@ -20,8 +20,5 @@ fn main() {
     );
     let empty = String::from("");
     let path = parser.positionals.last().unwrap_or(&empty);
-    if parser.has("json") {
-        return CriticalPathCheck::new(path).as_json();
-    }
-    CriticalPathCheck::new(path).run_cli();
+    CriticalPathCheck::new(path).run_cli(Some(parser.has("json")));
 }

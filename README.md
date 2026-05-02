@@ -219,7 +219,7 @@ let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
 let check_passed = cp_check.assert_javascript(500000);
 ```
 
-#### `CriticalPathCheck.run_cli(&self)`
+#### `CriticalPathCheck.run_cli(&self, as_json: Option<bool>)`
 
 Executes the critical path analysis as a CLI command logging all results to `stdout`
 
@@ -227,7 +227,9 @@ Executes the critical path analysis as a CLI command logging all results to `std
 use critical_path_check::critical_path_check::CriticalPathCheck;
 
 let cp_check = CriticalPathCheck::new("/path/to/my/root.html");
-cp_check.run_cli();
+cp_check.run_cli(None);
+/// or to log as json
+cp_check.run_cli(Some(true));
 ```
 
 ### Command Line

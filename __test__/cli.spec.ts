@@ -6,6 +6,17 @@ import test from "ava";
 import { cli } from "../dist";
 
 test("test cli", t => {
-  const result = cli(join(cwd(), "fixtures/test-portfolio/index.html"));
-  t.is(result, undefined);
+  t.is(
+    t.notThrows(() => cli(join(cwd(), "fixtures/test-portfolio/index.html"))),
+    true,
+  );
+});
+
+test("test json", t => {
+  t.is(
+    t.notThrows(() =>
+      cli(join(cwd(), "fixtures/test-portfolio/index.html"), true),
+    ),
+    true,
+  );
 });
