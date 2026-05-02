@@ -162,9 +162,14 @@ impl CriticalPathCheck {
     ///
     /// ```rust
     /// let cp_check = CriticalPathCheck::new("/path/to/index.html");
-    /// cp_check.run_cli();
+    /// cp_check.run_cli(None);
+    /// /// or to log as json
+    /// cp_check.run_cli(Some(true));
     /// ```
-    pub fn run_cli(&self) {
+    pub fn run_cli(&self, json: Option<bool>) {
+        if json.unwrap_or(false) {
+            return self.as_json();
+        }
         panic::set_hook(Box::new(|_| exit(1)));
         let analysis = CriticalResources::new(&self.root_html);
         FilePaths::log_unresolved();
@@ -182,6 +187,7 @@ impl CriticalPathCheck {
     /// cp_check.as_json();
     /// ```
     pub fn as_json(&self) {
+        panic::set_hook(Box::new(|_| exit(1)));
         println!("{}", CriticalResources::new(&self.root_html).to_json_str());
     }
 
