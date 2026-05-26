@@ -73,7 +73,7 @@ impl CriticalPathCheck {
 
     /// ## assert
     ///
-    /// Returns true if the specified number of bytes is greater than
+    /// Returns true if the specified number of bytes is less than
     /// the cummulative critical path
     ///
     /// ```rust
@@ -86,7 +86,7 @@ impl CriticalPathCheck {
 
     /// ## assert_javascript
     ///
-    /// Returns true if the specified number of bytes is greater than
+    /// Returns true if the specified number of bytes is less than
     /// the byte-weight of critical javascript
     ///
     /// ```rust
@@ -99,7 +99,7 @@ impl CriticalPathCheck {
 
     /// ## assert_css
     ///
-    /// Returns true if the specified number of bytes is greater than
+    /// Returns true if the specified number of bytes is less than
     /// the byte-weight of critical CSS
     ///
     /// ```rust
@@ -112,7 +112,7 @@ impl CriticalPathCheck {
 
     /// ## assert_html
     ///
-    /// Returns true if the specified number of bytes is greater than
+    /// Returns true if the specified number of bytes is less than
     /// the byte-weight of critical HTML
     ///
     /// ```rust

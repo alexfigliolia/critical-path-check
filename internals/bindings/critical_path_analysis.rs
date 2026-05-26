@@ -6,9 +6,13 @@ use critical_path_check::critical_path_check::critical_path_check::CriticalPathA
 
 #[napi(object)]
 pub struct CriticalPathAnalysis {
+    #[napi(js_name = "cssWeight")]
     pub css_weight: f64,
+    #[napi(js_name = "htmlWeight")]
     pub html_weight: f64,
+    #[napi(js_name = "javascriptWeight")]
     pub javascript_weight: f64,
+    #[napi(js_name = "unresolvedPaths")]
     pub unresolved_paths: HashMap<String, HashSet<String>>,
 }
 

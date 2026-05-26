@@ -1,6 +1,6 @@
 {
   "name": "@ui-perf/critical-path",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A critical path assertion library powered by rust",
   "keywords": [
     "ci",

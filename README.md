@@ -78,29 +78,29 @@ test("Critical Path should never exceed N bytes", () => {
 });
 ```
 
-#### `assertCriticalHTML`
+#### `assertCriticalHtml`
 
 Returns true if the weight of critical HTML does not exceed the input threshold bytes.
 
 ```typescript
-import { assertCriticalHTML } from "@ui-perf/critical-path";
+import { assertCriticalHtml } from "@ui-perf/critical-path";
 
 test("Critical HTML should never exceed N bytes", () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
-  expect(assertCriticalHTML(buildPath, 51200)).toEqual(true);
+  expect(assertCriticalHtml(buildPath, 51200)).toEqual(true);
 });
 ```
 
-#### `assertCriticalCSS`
+#### `assertCriticalCss`
 
 Returns true if the weight of critical CSS does not exceed the input threshold bytes.
 
 ```typescript
-import { assertCriticalCSS } from "@ui-perf/critical-path";
+import { assertCriticalCss } from "@ui-perf/critical-path";
 
 test("Critical CSS should never exceed N bytes", () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
-  expect(assertCriticalCSS(buildPath, 102400)).toEqual(true);
+  expect(assertCriticalCss(buildPath, 102400)).toEqual(true);
 });
 ```
 
