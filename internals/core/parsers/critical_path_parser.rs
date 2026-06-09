@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex as StdMutex};
 
 use async_recursion::async_recursion;
 use regex::Regex;
@@ -6,8 +6,10 @@ use tokio::{sync::Mutex, task::JoinSet};
 
 use crate::{
     logger::logger::Logger,
-    parsers::file_paths::{FilePaths, FileResolutionStrategy},
-    visitor::search_state::SearchState,
+    visitor::{
+        explored_paths::ExploredPaths, file_resolution_strategy::FileResolutionStrategy,
+        search_state::SearchState,
+    },
 };
 
 #[derive(Debug)]
@@ -20,11 +22,12 @@ impl CriticalPathParser {
     pub fn new(
         root: &FileResolutionStrategy,
         regex: Regex,
+        paths: Arc<StdMutex<ExploredPaths>>,
         stack: Vec<(FileResolutionStrategy, FileResolutionStrategy)>,
     ) -> Self {
         Self {
             stack,
-            state: SearchState::thread_safe(root, regex),
+            state: SearchState::thread_safe(root, regex, paths),
         }
     }
 
@@ -57,7 +60,13 @@ impl CriticalPathParser {
                     let state_clone = state.clone();
                     task_pool.spawn(CriticalPathParser::dfs(strategy, origin_clone, state_clone));
                 } else {
-                    FilePaths::store_unresolved_path(&file, reference);
+                    SearchState::read(&state, |v| {
+                        v.paths
+                            .lock()
+                            .unwrap()
+                            .store_unresolved_path(&file, reference)
+                    })
+                    .await;
                     Logger::path_error(reference);
                 }
             }

@@ -1,6 +1,6 @@
 {
   "name": "@ui-perf/critical-path",
-  "version": "1.2.1",
+  "version": "2.0.0",
   "description": "A critical path assertion library powered by rust",
   "keywords": [
     "ci",
@@ -64,10 +64,10 @@
     "ava": "^8.0.0",
     "emnapi": "^1.5.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.6",
-    "oxfmt": "^0.47.0",
+    "lint-staged": "^17.0.7",
+    "oxfmt": "^0.54.0",
     "oxlint": "^1.14.0",
-    "oxlint-tsgolint": "^0.22.1",
+    "oxlint-tsgolint": "^0.23.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.0"
   },

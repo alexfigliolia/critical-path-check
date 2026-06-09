@@ -12,29 +12,33 @@ import {
   assertCriticalPath,
 } from "../dist";
 
-test("test with errors encountered", t => {
-  const result = analyzeCriticalPath(
+test("test with errors encountered", async t => {
+  const result = await analyzeCriticalPath(
     join(cwd(), "fixtures/test-with-errors/index.html"),
   );
+  t.not(Object.keys(result.resolvedPaths).length, 0);
   t.is(Object.keys(result.unresolvedPaths).length, 3);
   t.is(result.htmlWeight, 542);
   t.is(result.cssWeight, 4454);
   t.is(result.javascriptWeight, 611996);
 });
 
-test("test with no errors encountered", t => {
-  const result = analyzeCriticalPath(
+test("test with no errors encountered", async t => {
+  const result = await analyzeCriticalPath(
     join(cwd(), "fixtures/test-portfolio/index.html"),
   );
+  t.not(Object.keys(result.resolvedPaths).length, 0);
   t.is(Object.keys(result.unresolvedPaths).length, 0);
   t.is(result.htmlWeight, 646);
   t.is(result.cssWeight, 11782);
   t.is(result.javascriptWeight, 1336333);
 });
 
-test("test measure", t => {
+test("test measure", async t => {
   t.is(
-    measureCriticalPath(join(cwd(), "fixtures/test-portfolio/index.html")),
+    await measureCriticalPath(
+      join(cwd(), "fixtures/test-portfolio/index.html"),
+    ),
     1348761,
   );
 });
@@ -45,10 +49,13 @@ test("test measure", t => {
   assertCriticalHtml,
   assertCriticalJavaScript,
 ].forEach(method => {
-  test(`test assertions ${method.name}`, t => {
-    t.is(method(join(cwd(), "fixtures/test-portfolio/index.html"), 100), false);
+  test(`test assertions ${method.name}`, async t => {
     t.is(
-      method(join(cwd(), "fixtures/test-portfolio/index.html"), 10000000),
+      await method(join(cwd(), "fixtures/test-portfolio/index.html"), 100),
+      false,
+    );
+    t.is(
+      await method(join(cwd(), "fixtures/test-portfolio/index.html"), 10000000),
       true,
     );
   });
@@ -72,7 +79,7 @@ test("test measure", t => {
     "CP Check: Failed to parse the root HTML file",
   ],
 ].forEach(([path, message]) => {
-  test(`test throwing stderr - ${message}`, t => {
-    t.throws(() => analyzeCriticalPath(path), { message });
+  test(`test throwing stderr - ${message}`, async t => {
+    await t.throwsAsync(() => analyzeCriticalPath(path), { message });
   });
 });
