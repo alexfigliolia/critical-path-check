@@ -1,30 +1,18 @@
 use std::{
-    collections::{HashMap, HashSet},
-    fs::read_to_string,
     path::{Path, PathBuf},
-    sync::{LazyLock, Mutex, MutexGuard},
+    sync::LazyLock,
 };
 
-use colored::Colorize;
 use fancy_regex::Regex as RegexWithLookAhead;
 use normalize_path::NormalizePath;
 use regex::Regex;
 
-use crate::logger::logger::Logger;
-
-#[derive(Hash, PartialEq, Eq, Debug, Clone)]
-pub enum FileResolutionStrategy {
-    Http(String),
-    Local(PathBuf),
-}
+use crate::visitor::file_resolution_strategy::FileResolutionStrategy;
 
 #[derive(Clone)]
 pub struct FilePaths {
     pub root_directory: FileResolutionStrategy,
 }
-
-static UNRESOLVED_PATHS: LazyLock<Mutex<HashMap<String, HashSet<String>>>> =
-    LazyLock::new(|| Mutex::new(HashMap::new()));
 
 static URL_PATH_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"https?:\/\/.*?\/([^\?]+)"#).unwrap());
@@ -46,22 +34,6 @@ impl FilePaths {
         FilePaths { root_directory }
     }
 
-    pub fn unresolved_paths() -> MutexGuard<'static, HashMap<String, HashSet<String>>> {
-        UNRESOLVED_PATHS.lock().unwrap()
-    }
-
-    pub fn store_unresolved_path(root: &FileResolutionStrategy, path: &str) {
-        let mut unresolved = FilePaths::unresolved_paths();
-        let root_hash = FilePaths::hash(root);
-        let mut default_bucket = HashSet::new();
-        let bucket = unresolved
-            .get_mut(&root_hash)
-            .unwrap_or(&mut default_bucket);
-        bucket.insert(path.to_owned());
-        let thing: HashSet<String> = bucket.clone();
-        unresolved.insert(root_hash, thing);
-    }
-
     pub fn before_query_params(path: &str) -> &str {
         if let Ok(capture_result) = PRE_QUERY_PARAM_REGEX.captures(path)
             && let Some(first_capture) = capture_result
@@ -70,11 +42,6 @@ impl FilePaths {
             return file_name_without_query_params.as_str();
         }
         path
-    }
-
-    pub fn clear_unresolved_paths() {
-        let mut unresolved = FilePaths::unresolved_paths();
-        *unresolved = HashMap::new();
     }
 
     pub fn to_string(path: &Path) -> String {
@@ -90,7 +57,7 @@ impl FilePaths {
         match &self.root_directory {
             FileResolutionStrategy::Http(url) => {
                 if is_http_path {
-                    return Some(FileResolutionStrategy::Http(path.to_owned()));
+                    return Some(FileResolutionStrategy::Http(url.to_owned()));
                 }
                 if let Some(captures) = URL_PROTOCOL_AND_PATH_REGEX.captures(url)
                     && let Some(protocol) = captures.get(1)
@@ -126,61 +93,11 @@ impl FilePaths {
                         }
                     }
                 }
-                if path.starts_with("http") {
+                if is_http_path {
                     return Some(FileResolutionStrategy::Http(path.to_owned()));
                 }
                 None
             }
-        }
-    }
-
-    pub fn read_resource(path: &PathBuf) -> Option<String> {
-        if let Ok(content) = read_to_string(path) {
-            return Some(content);
-        }
-        None
-    }
-
-    pub fn fetch_resource(url: &str) -> Option<String> {
-        if let Ok(response) = minreq::get(url).send()
-            && let Ok(body) = response.as_str()
-        {
-            return Some(body.to_owned());
-        }
-        None
-    }
-
-    pub fn hash(strategy: &FileResolutionStrategy) -> String {
-        match strategy {
-            FileResolutionStrategy::Http(url) => url.to_owned(),
-            FileResolutionStrategy::Local(path) => FilePaths::to_string(path),
-        }
-    }
-
-    pub fn log_unresolved() {
-        let unresolved = FilePaths::unresolved_paths();
-        if !unresolved.is_empty() {
-            eprintln!();
-            Logger::info(
-                "The following file references were not resolved and will be omitted from analysis",
-            );
-            for (root, bucket) in unresolved.iter() {
-                eprintln!(
-                    "\n{}{}{}",
-                    Logger::indent(None),
-                    "Origin: ".cyan(),
-                    root.bright_blue()
-                );
-                for path in bucket {
-                    eprintln!(
-                        "{}{}{}",
-                        Logger::indent(Some(6)),
-                        "References: ".cyan(),
-                        path.bright_blue()
-                    )
-                }
-            }
-            eprintln!();
         }
     }
 }

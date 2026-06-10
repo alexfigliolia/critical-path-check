@@ -2,14 +2,14 @@
 [package]
 edition = "2021"
 name = "bindings"
-version = "1.2.1"
+version = "2.0.0"
 
 [lib]
 crate-type = ["cdylib"]
 path = "lib.rs"
 
 [dependencies]
-critical-path-check = { version = "1.2.1", path = "../core" }
+critical-path-check = { version = "2.0.0", path = "../core" }
 napi = "3.8.6"
 napi-derive = "3.5.5"
 
