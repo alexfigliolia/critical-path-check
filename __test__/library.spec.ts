@@ -16,6 +16,8 @@ test("test with errors encountered", async t => {
   const result = await analyzeCriticalPath(
     join(cwd(), "fixtures/test-with-errors/index.html"),
   );
+  console.log(result.resolvedPaths);
+  console.log(result.unresolvedPaths);
   t.is(result.htmlWeight, 542);
   t.is(result.cssWeight, 4454);
   t.is(result.javascriptWeight, 611996);
@@ -27,6 +29,8 @@ test("test with no errors encountered", async t => {
   const result = await analyzeCriticalPath(
     join(cwd(), "fixtures/test-portfolio/index.html"),
   );
+  console.log(result.resolvedPaths);
+  console.log(result.unresolvedPaths);
   t.is(result.htmlWeight, 646);
   t.is(result.cssWeight, 11782);
   t.is(result.javascriptWeight, 1336333);
