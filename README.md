@@ -41,10 +41,10 @@ will also return any unresolvable paths encountered during the analysis
 ```typescript
 import { analyzeCriticalPath } from "@ui-perf/critical-path";
 
-test("Critical Path should never exceed N bytes", () => {
+test("Critical Path should never exceed N bytes", async () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
   const { htmlWeight, cssWeight, javascriptWeight } =
-    analyzeCriticalPath(buildPath);
+    await analyzeCriticalPath(buildPath);
   expect(htmlWeight).toBeLessThan(51200);
   expect(cssWeight).toBeLessThan(102400);
   expect(javascriptWeight).toBeLessThan(204800);
@@ -58,9 +58,9 @@ Returns the combined weight of critical HTML, CSS, and JavaScript in bytes
 ```typescript
 import { measureCriticalPath } from "@ui-perf/critical-path";
 
-test("The critical path should never exceed N bytes", () => {
+test("The critical path should never exceed N bytes", async () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
-  expect(measureCriticalPath(buildPath)).toBeLessThan(204800);
+  expect(await measureCriticalPath(buildPath)).toBeLessThan(204800);
 });
 ```
 
@@ -72,9 +72,9 @@ does not exceed the input threshold bytes.
 ```typescript
 import { assertCriticalPath } from "@ui-perf/critical-path";
 
-test("Critical Path should never exceed N bytes", () => {
+test("Critical Path should never exceed N bytes", async () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
-  expect(assertCriticalPath(buildPath, 204800)).toEqual(true);
+  expect(await assertCriticalPath(buildPath, 204800)).toEqual(true);
 });
 ```
 
@@ -85,9 +85,9 @@ Returns true if the weight of critical HTML does not exceed the input threshold 
 ```typescript
 import { assertCriticalHtml } from "@ui-perf/critical-path";
 
-test("Critical HTML should never exceed N bytes", () => {
+test("Critical HTML should never exceed N bytes", async () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
-  expect(assertCriticalHtml(buildPath, 51200)).toEqual(true);
+  expect(await assertCriticalHtml(buildPath, 51200)).toEqual(true);
 });
 ```
 
@@ -98,9 +98,9 @@ Returns true if the weight of critical CSS does not exceed the input threshold b
 ```typescript
 import { assertCriticalCss } from "@ui-perf/critical-path";
 
-test("Critical CSS should never exceed N bytes", () => {
+test("Critical CSS should never exceed N bytes", async () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
-  expect(assertCriticalCss(buildPath, 102400)).toEqual(true);
+  expect(await assertCriticalCss(buildPath, 102400)).toEqual(true);
 });
 ```
 
@@ -111,9 +111,9 @@ Returns true if the combined weight of critical JS does not exceed the input thr
 ```typescript
 import { assertCriticalJavaScript } from "@ui-perf/critical-path";
 
-test("Critical JavaScript should never exceed N bytes", () => {
+test("Critical JavaScript should never exceed N bytes", async () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
-  expect(assertCriticalJavaScript(buildPath, 204800)).toEqual(true);
+  expect(await assertCriticalJavaScript(buildPath, 204800)).toEqual(true);
 });
 ```
 
@@ -131,9 +131,9 @@ use critical_path_check::analyze_critical_path;
 let my_html = PathBuf::from("/path/to/my/root.html");
 let result = analyze_critical_path(&my_html);
 
-println!("Total JS Bytes: {}", result.analysis.javascript_weight);
-println!("Total CSS Bytes: {}", result.analysis.css_weight);
-println!("Total HTML Bytes: {}", result.analysis.html_weight);
+println!("Total JS Bytes: {}", result.javascript_weight);
+println!("Total CSS Bytes: {}", result.css_weight);
+println!("Total HTML Bytes: {}", result.html_weight);
 ```
 
 #### `CriticalPathCheck`

@@ -1,5 +1,4 @@
 use std::{
-    collections::{HashMap, HashSet},
     ffi::OsStr,
     panic,
     path::{Path, PathBuf},
@@ -9,14 +8,9 @@ use std::{
 use colored::Colorize;
 
 use crate::{
-    critical_path_check::critical_resources::CriticalResources,
-    logger::logger::Logger,
-    parsers::file_paths::{FilePaths, FileResolutionStrategy},
+    critical_path_check::critical_resources::CriticalResources, logger::logger::Logger,
+    parsers::file_paths::FilePaths, visitor::file_resolution_strategy::FileResolutionStrategy,
 };
-
-pub struct CriticalPathCheck {
-    root_html: FileResolutionStrategy,
-}
 
 /// Utilities for analyzing the critical render path of a web application
 ///
@@ -29,14 +23,12 @@ pub struct CriticalPathCheck {
 /// # or
 /// let cp_check = CriticalPathCheck::from(&PathBuf::from("/path/to/my/root.html"));
 /// let result = cp_check.run();
-/// println!("Total JS Bytes: {}", result.analysis.javascript_weight);
-/// println!("Total CSS Bytes: {}", result.analysis.css_weight);
-/// println!("Total HTML Bytes: {}", result.analysis.html_weight);
-/// println!("Total Bytes: {}", cp_check.measure());
+/// println!("Total JS Bytes: {}", result.javascript_weight);
+/// println!("Total CSS Bytes: {}", result.css_weight);
+/// println!("Total HTML Bytes: {}", result.html_weight);
 /// ```
-pub struct CriticalPathAnalysis {
-    pub analysis: CriticalResources,
-    pub unresolved_paths: HashMap<String, HashSet<String>>,
+pub struct CriticalPathCheck {
+    pub root_html: FileResolutionStrategy,
 }
 
 impl CriticalPathCheck {
@@ -65,7 +57,7 @@ impl CriticalPathCheck {
     /// let my_path = PathBuf::from("/path/to/index.html");
     /// let cp_check = CriticalPathCheck::from_path_buf(&my_path);
     /// ```
-    pub fn from_path_buf(root_html: &PathBuf) -> Self {
+    pub fn from_path_buf(root_html: &Path) -> Self {
         CriticalPathCheck {
             root_html: FileResolutionStrategy::Local(CriticalPathCheck::validate_path(root_html)),
         }
@@ -94,7 +86,7 @@ impl CriticalPathCheck {
     /// let check_passed = cp_check.assert_javascript(500000);
     /// ```
     pub fn assert_javascript(&self, bytes: usize) -> bool {
-        self.run().analysis.javascript_weight < bytes
+        self.run().javascript_weight < bytes
     }
 
     /// ## assert_css
@@ -107,7 +99,7 @@ impl CriticalPathCheck {
     /// let check_passed = cp_check.assert_css(100000);
     /// ```
     pub fn assert_css(&self, bytes: usize) -> bool {
-        self.run().analysis.css_weight < bytes
+        self.run().css_weight < bytes
     }
 
     /// ## assert_html
@@ -120,7 +112,7 @@ impl CriticalPathCheck {
     /// let check_passed = cp_check.assert_html(50000);
     /// ```
     pub fn assert_html(&self, bytes: usize) -> bool {
-        self.run().analysis.html_weight < bytes
+        self.run().html_weight < bytes
     }
 
     /// ## measure
@@ -132,7 +124,7 @@ impl CriticalPathCheck {
     /// let critical_path_size: usize = cp_check.measure();
     /// ```
     pub fn measure(&self) -> usize {
-        self.run().analysis.total_weight()
+        self.run().total_weight()
     }
 
     /// ## run
@@ -143,16 +135,10 @@ impl CriticalPathCheck {
     ///
     /// ```rust
     /// let cp_check = CriticalPathCheck::new("/path/to/index.html");
-    /// let result: CriticalPathAnalysis = cp_check.run();
+    /// let result: CriticalResources = cp_check.run();
     /// ```
-    pub fn run(&self) -> CriticalPathAnalysis {
-        let analysis = CriticalResources::new(&self.root_html);
-        let unresolved_paths = FilePaths::unresolved_paths().clone();
-        FilePaths::clear_unresolved_paths();
-        CriticalPathAnalysis {
-            analysis,
-            unresolved_paths,
-        }
+    pub fn run(&self) -> CriticalResources {
+        CriticalResources::new(&self.root_html)
     }
 
     /// ## run_cli
@@ -172,9 +158,8 @@ impl CriticalPathCheck {
         }
         panic::set_hook(Box::new(|_| exit(1)));
         let analysis = CriticalResources::new(&self.root_html);
-        FilePaths::log_unresolved();
+        analysis.paths.log_unresolved();
         analysis.log_stats();
-        FilePaths::clear_unresolved_paths();
     }
 
     /// ## as_json

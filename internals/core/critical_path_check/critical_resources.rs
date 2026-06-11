@@ -1,15 +1,16 @@
+use std::collections::{HashMap, HashSet};
+
 use crate::{
     logger::logger::Logger,
-    parsers::{
-        file_paths::{FilePaths, FileResolutionStrategy},
-        html_parser::HTMLParser,
-    },
+    parsers::html_parser::HTMLParser,
+    visitor::{explored_paths::ExploredPaths, file_resolution_strategy::FileResolutionStrategy},
 };
 
 pub struct CriticalResources {
     pub css_weight: usize,
     pub html_weight: usize,
     pub javascript_weight: usize,
+    pub paths: ExploredPaths,
 }
 
 impl CriticalResources {
@@ -41,11 +42,22 @@ impl CriticalResources {
         json_tokens.push(format!("\"htmlWeight\":{},", self.html_weight));
         json_tokens.push(format!("\"cssWeight\":{},", self.css_weight));
         json_tokens.push(format!("\"javascriptWeight\":{},", self.javascript_weight));
+        json_tokens.push("\"resolvedPaths\": {".to_string());
+        json_tokens.append(&mut self.stringify_paths(&self.paths.resolved));
+        json_tokens.push("}".to_string());
+        json_tokens.push(",".to_string());
         json_tokens.push("\"unresolvedPaths\": {".to_string());
-        let unresolved_paths = FilePaths::unresolved_paths();
-        if !unresolved_paths.is_empty() {
-            let max_root_index = unresolved_paths.len() - 1;
-            for (root_idx, (root, paths)) in unresolved_paths.iter().enumerate() {
+        json_tokens.append(&mut self.stringify_paths(&self.paths.unresolved));
+        json_tokens.push("}".to_string());
+        json_tokens.push("}".to_string());
+        json_tokens.join("")
+    }
+
+    fn stringify_paths(&self, paths: &HashMap<String, HashSet<String>>) -> Vec<String> {
+        let mut json_tokens: Vec<String> = Vec::new();
+        if !paths.is_empty() {
+            let max_root_index = paths.len() - 1;
+            for (root_idx, (root, paths)) in paths.iter().enumerate() {
                 json_tokens.push(format!("\"{}\":[", root));
                 let max_paths_index = paths.len() - 1;
                 for (path_idx, path) in paths.iter().enumerate() {
@@ -62,7 +74,6 @@ impl CriticalResources {
                 }
             }
         }
-        json_tokens.push("}}".to_string());
-        json_tokens.join("")
+        json_tokens
     }
 }

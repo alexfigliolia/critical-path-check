@@ -5,18 +5,14 @@ import test from "ava";
 
 import { cli } from "../dist";
 
-test("test cli", t => {
-  t.is(
-    t.notThrows(() => cli(join(cwd(), "fixtures/test-portfolio/index.html"))),
-    true,
+test("test cli", async t => {
+  await t.notThrowsAsync(() =>
+    cli(join(cwd(), "fixtures/test-portfolio/index.html")),
   );
 });
 
-test("test json", t => {
-  t.is(
-    t.notThrows(() =>
-      cli(join(cwd(), "fixtures/test-portfolio/index.html"), true),
-    ),
-    true,
+test("test json", async t => {
+  await t.notThrowsAsync(() =>
+    cli(join(cwd(), "fixtures/test-portfolio/index.html"), true),
   );
 });
