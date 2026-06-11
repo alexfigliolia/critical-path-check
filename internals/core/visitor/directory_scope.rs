@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::parsers::file_paths::FileResolutionStrategy;
+use crate::visitor::file_resolution_strategy::FileResolutionStrategy;
 
 #[derive(Clone, Debug)]
 pub struct DirectoryScope {

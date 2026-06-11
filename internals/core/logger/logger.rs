@@ -1,7 +1,5 @@
 use colored::{ColoredString, Colorize};
 
-use crate::errors::errors::Error;
-
 pub struct Logger;
 
 impl Logger {
@@ -61,8 +59,7 @@ impl Logger {
 
     pub fn panic_with_error(message: &str) {
         Logger::error(message);
-        Error::hoist(Error::new(format!("{}{}", Logger::error_prefix(), message)));
-        panic!("{}", Error::unload());
+        panic!("{}{message}", Logger::error_prefix());
     }
 
     pub fn indent(n: Option<usize>) -> String {
