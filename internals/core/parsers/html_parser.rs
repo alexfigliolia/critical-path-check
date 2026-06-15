@@ -1,15 +1,14 @@
 use regex::Regex;
-use std::sync::{Arc, LazyLock};
+use std::sync::{Arc, LazyLock, Mutex};
 use tokio::{join, task::JoinSet};
 
 use crate::{
     critical_path_check::critical_resources::CriticalResources,
     logger::logger::Logger,
     parsers::{
-        asset_parser::AssetParser,
-        critical_path_parser::CriticalPathParser,
-        file_paths::{FilePaths, FileResolutionStrategy},
+        asset_parser::AssetParser, critical_path_parser::CriticalPathParser, file_paths::FilePaths,
     },
+    visitor::{explored_paths::ExploredPaths, file_resolution_strategy::FileResolutionStrategy},
 };
 
 static URL_PARENT_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"^(.*)\/"#).unwrap());
@@ -18,6 +17,7 @@ pub struct HTMLParser {
     pub html_path: FileResolutionStrategy,
     pub file_resolver: FilePaths,
     pub html_content: String,
+    pub paths: Arc<Mutex<ExploredPaths>>,
 }
 
 impl HTMLParser {
@@ -28,6 +28,7 @@ impl HTMLParser {
             file_resolver,
             html_path: root_html.to_owned(),
             html_content: html_content.to_owned(),
+            paths: Arc::new(Mutex::new(ExploredPaths::new())),
         }
     }
 
@@ -43,6 +44,7 @@ impl HTMLParser {
             css_weight,
             javascript_weight,
             html_weight: arc.html_content.len(),
+            paths: arc.paths.lock().unwrap().clone(),
         }
     }
 
@@ -50,7 +52,8 @@ impl HTMLParser {
         CriticalPathParser::new(
             &self.file_resolver.root_directory,
             Regex::new(r#"(?:^|\W)import\s*(?:(?:(?:[a-zA-Z_$][\w$]*)|(?:\{[^{}]+\})|(?:\*\s+as\s+[a-zA-Z_$][\w$]*)|(?:[a-zA-Z_$][\w$]*\s*,\s*(?:\{[^{}]+\}|(?:\*\s+as\s+[a-zA-Z_$][\w$]*))))\s*from\s*)?['`"]([^'`"]+)['`"]"#).unwrap(),
-            AssetParser::create_script_parser(&self.html_path)
+            self.paths.clone(),
+            AssetParser::create_script_parser(&self.html_path, self.paths.clone())
                 .parse_from(&self.html_content, &self.file_resolver)
                 .to_stack(),
         )
@@ -60,7 +63,8 @@ impl HTMLParser {
         CriticalPathParser::new(
             &self.file_resolver.root_directory,
             Regex::new(r#"(?:^|;|})@import\s*?(?:url\()?['`"]([^'`"]+)['`"](?:\))?"#).unwrap(),
-            AssetParser::create_link_parser(&self.html_path)
+            self.paths.clone(),
+            AssetParser::create_link_parser(&self.html_path, self.paths.clone())
                 .parse_from(&self.html_content, &self.file_resolver)
                 .to_stack(),
         )
@@ -88,10 +92,7 @@ impl HTMLParser {
     }
 
     fn resolve_root(html_path: &FileResolutionStrategy) -> String {
-        if let Some(content) = match html_path {
-            FileResolutionStrategy::Http(url) => FilePaths::fetch_resource(url),
-            FileResolutionStrategy::Local(path) => FilePaths::read_resource(path),
-        } {
+        if let Some(content) = html_path.resolve_file() {
             return content;
         }
         Logger::panic_with_error("Failed to parse the root HTML file");

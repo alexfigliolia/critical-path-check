@@ -1,9 +1,10 @@
-use std::path::PathBuf;
+use std::path::Path;
 
-use crate::critical_path_check::critical_path_check::{CriticalPathAnalysis, CriticalPathCheck};
+use crate::critical_path_check::{
+    critical_path_check::CriticalPathCheck, critical_resources::CriticalResources,
+};
 
 pub mod critical_path_check;
-mod errors;
 mod logger;
 pub mod parsers;
 mod visitor;
@@ -22,10 +23,10 @@ mod visitor;
 ///
 /// let my_html = PathBuf::from("/path/to/my/root.html");
 /// let result = analyze_critical_path(&my_html);
-/// println!("Total JS Bytes: {}", result.analysis.javascript_weight);
-/// println!("Total CSS Bytes: {}", result.analysis.css_weight);
-/// println!("Total HTML Bytes: {}", result.analysis.html_weight);
+/// println!("Total JS Bytes: {}", result.javascript_weight);
+/// println!("Total CSS Bytes: {}", result.css_weight);
+/// println!("Total HTML Bytes: {}", result.html_weight);
 /// ```
-pub fn analyze_critical_path(path: &PathBuf) -> CriticalPathAnalysis {
+pub fn analyze_critical_path(path: &Path) -> CriticalResources {
     CriticalPathCheck::from_path_buf(path).run()
 }

@@ -1,7 +1,7 @@
 use std::{
     fs::File,
     io::{BufRead, BufReader},
-    sync::Arc,
+    sync::{Arc, Mutex as StdMutex},
 };
 
 use dashmap::DashSet;
@@ -10,8 +10,10 @@ use tokio::sync::{Mutex, MutexGuard};
 
 use crate::{
     logger::logger::Logger,
-    parsers::file_paths::{FilePaths, FileResolutionStrategy},
-    visitor::{directory_scope::DirectoryScope, visitor::Visitor},
+    visitor::{
+        directory_scope::DirectoryScope, explored_paths::ExploredPaths,
+        file_resolution_strategy::FileResolutionStrategy, visitor::Visitor,
+    },
 };
 
 #[derive(Debug)]
@@ -20,11 +22,17 @@ pub struct SearchState {
     pub parser: Regex,
     pub scope: DirectoryScope,
     pub visited: DashSet<String>,
+    pub paths: Arc<StdMutex<ExploredPaths>>,
 }
 
 impl SearchState {
-    pub fn new(root: &FileResolutionStrategy, parser: Regex) -> Self {
+    pub fn new(
+        root: &FileResolutionStrategy,
+        parser: Regex,
+        paths: Arc<StdMutex<ExploredPaths>>,
+    ) -> Self {
         Self {
+            paths,
             parser,
             weight: 0,
             visited: DashSet::new(),
@@ -32,8 +40,12 @@ impl SearchState {
         }
     }
 
-    pub fn thread_safe(root: &FileResolutionStrategy, parser: Regex) -> Arc<Mutex<SearchState>> {
-        Arc::new(Mutex::new(SearchState::new(root, parser)))
+    pub fn thread_safe(
+        root: &FileResolutionStrategy,
+        parser: Regex,
+        paths: Arc<StdMutex<ExploredPaths>>,
+    ) -> Arc<Mutex<SearchState>> {
+        Arc::new(Mutex::new(SearchState::new(root, parser, paths)))
     }
 
     pub async fn read<R>(
@@ -49,13 +61,13 @@ impl SearchState {
         file: &FileResolutionStrategy,
         origin: &FileResolutionStrategy,
     ) -> Option<Visitor> {
-        let key: String = FilePaths::hash(file);
+        let key: String = file.to_string();
         if !self.visited.insert(key) {
             return None;
         }
         Some(
             self.create_visitor(file)
-                .with_references(self.capture_import_references(file, origin)),
+                .with_references(self.capture_file_and_import_references(file, origin)),
         )
     }
 
@@ -69,7 +81,7 @@ impl SearchState {
         }
     }
 
-    fn capture_import_references(
+    fn capture_file_and_import_references(
         &mut self,
         file: &FileResolutionStrategy,
         origin: &FileResolutionStrategy,
@@ -77,24 +89,29 @@ impl SearchState {
         let mut references: Vec<String> = Vec::new();
         match &file {
             FileResolutionStrategy::Local(path) => {
+                let path_str = file.to_string();
                 if let Ok(file_interface) = File::open(path)
                     && let Ok(meta) = file_interface.metadata()
                 {
+                    self.capture_resolved_path(origin, &path_str);
                     self.weight += meta.len() as usize;
                     let buffer = BufReader::new(file_interface);
-                    for line in buffer.lines().filter_map(Result::ok) {
+                    for line in buffer.lines().map_while(Result::ok) {
                         references.append(&mut self.capture_regex_matches(&line));
                     }
                 } else {
-                    self.capture_unresolved_path(origin, &FilePaths::hash(file));
+                    self.capture_unresolved_path(origin, &path_str);
+                    Logger::path_error(&path_str);
                 }
             }
             FileResolutionStrategy::Http(url) => {
-                if let Some(content) = FilePaths::fetch_resource(url) {
+                if let Some(content) = FileResolutionStrategy::fetch_resource(url) {
+                    self.capture_resolved_path(origin, url);
                     self.weight += content.len();
                     references.append(&mut self.capture_regex_matches(&content));
                 } else {
                     self.capture_unresolved_path(origin, url);
+                    Logger::failed_to_load_file(url);
                 }
             }
         }
@@ -110,8 +127,14 @@ impl SearchState {
         references
     }
 
-    fn capture_unresolved_path(&self, origin: &FileResolutionStrategy, path: &str) {
-        FilePaths::store_unresolved_path(origin, path);
-        Logger::failed_to_parse_file(path);
+    fn capture_unresolved_path(&mut self, origin: &FileResolutionStrategy, path: &str) {
+        self.paths
+            .lock()
+            .unwrap()
+            .store_unresolved_path(origin, path);
+    }
+
+    fn capture_resolved_path(&mut self, origin: &FileResolutionStrategy, path: &str) {
+        self.paths.lock().unwrap().store_resolved_path(origin, path);
     }
 }

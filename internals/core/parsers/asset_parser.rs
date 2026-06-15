@@ -1,36 +1,57 @@
-use std::collections::HashSet;
+use std::{
+    collections::HashSet,
+    sync::{Arc, Mutex},
+};
 
 use regex::Regex;
 
-use crate::parsers::file_paths::{FilePaths, FileResolutionStrategy};
+use crate::{
+    logger::logger::Logger,
+    parsers::file_paths::FilePaths,
+    visitor::{explored_paths::ExploredPaths, file_resolution_strategy::FileResolutionStrategy},
+};
 
 #[derive(Debug)]
 pub struct AssetParser {
     parser: Regex,
     origin: FileResolutionStrategy,
+    paths: Arc<Mutex<ExploredPaths>>,
     linked_assets: HashSet<FileResolutionStrategy>,
 }
 
 impl AssetParser {
-    pub fn new(origin: &FileResolutionStrategy, parser: Regex) -> Self {
+    pub fn new(
+        origin: &FileResolutionStrategy,
+        parser: Regex,
+        paths: Arc<Mutex<ExploredPaths>>,
+    ) -> Self {
         Self {
+            paths,
             parser,
             origin: origin.to_owned(),
             linked_assets: HashSet::new(),
         }
     }
 
-    pub fn create_link_parser(html_path: &FileResolutionStrategy) -> AssetParser {
+    pub fn create_link_parser(
+        html_path: &FileResolutionStrategy,
+        paths: Arc<Mutex<ExploredPaths>>,
+    ) -> AssetParser {
         AssetParser::new(
             html_path,
             Regex::new(r#"<link.*?rel=['"]stylesheet["'].*?href=['"]([^'"]+)['"].*?>"#).unwrap(),
+            paths,
         )
     }
 
-    pub fn create_script_parser(html_path: &FileResolutionStrategy) -> AssetParser {
+    pub fn create_script_parser(
+        html_path: &FileResolutionStrategy,
+        paths: Arc<Mutex<ExploredPaths>>,
+    ) -> AssetParser {
         AssetParser::new(
             html_path,
             Regex::new(r#"<script.*?src=['"]([^'"]+)['"].*?>"#).unwrap(),
+            paths,
         )
     }
 
@@ -38,10 +59,13 @@ impl AssetParser {
         let captures = self.parser.captures_iter(content);
         for capture in captures {
             if let Some(group) = capture.get(1) {
-                if let Some(resolution) = resolver.resolve_file(group.as_str(), &Vec::new()) {
+                let group_str = group.as_str();
+                let mut paths = self.paths.lock().unwrap();
+                if let Some(resolution) = resolver.resolve_file(group_str, &Vec::new()) {
                     self.linked_assets.insert(resolution);
                 } else {
-                    FilePaths::store_unresolved_path(&self.origin, group.as_str());
+                    paths.store_unresolved_path(&self.origin, group_str);
+                    Logger::path_error(group_str);
                 }
             }
         }

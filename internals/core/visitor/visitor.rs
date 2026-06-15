@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
-use crate::parsers::file_paths::{FilePaths, FileResolutionStrategy};
+use crate::{
+    parsers::file_paths::FilePaths, visitor::file_resolution_strategy::FileResolutionStrategy,
+};
 
 pub struct Visitor {
     pub references: Vec<String>,

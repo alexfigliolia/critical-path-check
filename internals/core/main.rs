@@ -3,7 +3,6 @@ use crate::critical_path_check::critical_path_check::CriticalPathCheck;
 
 mod argv;
 mod critical_path_check;
-mod errors;
 mod logger;
 mod parsers;
 mod visitor;
