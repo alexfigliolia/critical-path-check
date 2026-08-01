@@ -1,6 +1,6 @@
 {
   "name": "@ui-perf/critical-path",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A critical path assertion library powered by rust",
   "keywords": [
     "ci",
@@ -46,7 +46,7 @@
     "prepare": "husky",
     "prepublishOnly": "napi prepublish -t npm",
     "release": "tsx ./release/run.ts",
-    "run:dev": "cargo run --package critical-path-check --bin critical-path-check",
+    "run:dev": "cargo run --package critical-path-check --bin critical-path-check --manifest-path ./internals/core/Cargo.toml",
     "test": "pnpm build && ava",
     "test:ci": "ava",
     "version": "napi version"

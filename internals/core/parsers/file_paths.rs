@@ -57,7 +57,7 @@ impl FilePaths {
         match &self.root_directory {
             FileResolutionStrategy::Http(url) => {
                 if is_http_path {
-                    return Some(FileResolutionStrategy::Http(url.to_owned()));
+                    return Some(FileResolutionStrategy::Http(path.to_owned()));
                 }
                 if let Some(captures) = URL_PROTOCOL_AND_PATH_REGEX.captures(url)
                     && let Some(protocol) = captures.get(1)

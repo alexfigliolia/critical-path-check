@@ -56,14 +56,19 @@ impl AssetParser {
     }
 
     pub fn parse_from(mut self, content: &str, resolver: &FilePaths) -> Self {
+        let mut memo = HashSet::new();
         let captures = self.parser.captures_iter(content);
         for capture in captures {
             if let Some(group) = capture.get(1) {
                 let group_str = group.as_str();
-                let mut paths = self.paths.lock().unwrap();
+                if memo.contains(group_str) {
+                    continue;
+                }
+                memo.insert(group_str);
                 if let Some(resolution) = resolver.resolve_file(group_str, &Vec::new()) {
                     self.linked_assets.insert(resolution);
                 } else {
+                    let mut paths = self.paths.lock().unwrap();
                     paths.store_unresolved_path(&self.origin, group_str);
                     Logger::path_error(group_str);
                 }
