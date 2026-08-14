@@ -39,7 +39,7 @@ impl AssetParser {
     ) -> AssetParser {
         AssetParser::new(
             html_path,
-            Regex::new(r#"<link.*?rel=['"]stylesheet["'].*?href=['"]([^'"]+)['"].*?>"#).unwrap(),
+            Regex::new(r#"<link.*?rel=['"]stylesheet["'].*? href=['"]([^'"]+)['"].*?>"#).unwrap(),
             paths,
         )
     }
@@ -50,7 +50,7 @@ impl AssetParser {
     ) -> AssetParser {
         AssetParser::new(
             html_path,
-            Regex::new(r#"<script.*?src=['"]([^'"]+)['"].*?>"#).unwrap(),
+            Regex::new(r#"<script.*? src=['"]([^'"]+)['"].*?>"#).unwrap(),
             paths,
         )
     }
