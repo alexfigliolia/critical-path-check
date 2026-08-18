@@ -1,6 +1,6 @@
 # Critical Path Check
 
-A rust powered tool for making assertions on a web application's critical path
+A [critical render path](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path) assertion library for web applications.
 
 1. [Installation](#installation)
 2. [JavaScript API](#javascript-api)
@@ -43,11 +43,10 @@ import { analyzeCriticalPath } from "@ui-perf/critical-path";
 
 test("Critical Path should never exceed N bytes", async () => {
   const buildPath = path.join(process.cwd(), "dist", "index.html");
-  const { htmlWeight, cssWeight, javascriptWeight } =
-    await analyzeCriticalPath(buildPath);
-  expect(htmlWeight).toBeLessThan(51200);
-  expect(cssWeight).toBeLessThan(102400);
-  expect(javascriptWeight).toBeLessThan(204800);
+  const analysis = await analyzeCriticalPath(buildPath);
+  expect(analysis.htmlWeight).toBeLessThan(51200);
+  expect(analysis.cssWeight).toBeLessThan(102400);
+  expect(analysis.javascriptWeight).toBeLessThan(204800);
 });
 ```
 
