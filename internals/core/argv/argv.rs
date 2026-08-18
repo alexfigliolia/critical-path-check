@@ -114,7 +114,7 @@ impl Argv {
                     Logger::error(
                         format!(
                             "I encountered the flag {} more than once.",
-                            &flag.bright_blue().bold()
+                            flag.bright_blue().bold()
                         )
                         .as_str(),
                     );
